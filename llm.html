@@ -9,16 +9,9 @@ const ollama = new Ollama({
   model: "deepseek-coder:1.3b-instruct-q4_1", // Default value
 });
 
-const stream = await ollama.stream(
-  `Translate "I love programming" into German.`
-);
+const answer = await ollama.call(`why is the sky blue?`);
 
-const chunks = [];
-for await (const chunk of stream) {
-  chunks.push(chunk);
-}
-
-console.log(chunks.join(""));
+console.log(answer);
 </script>  
 </body>
 </html>
