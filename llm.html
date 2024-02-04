@@ -9,7 +9,7 @@ const ollama = new Ollama({
   model: "deepseek-coder:1.3b-instruct-q4_1", // Default value
 });
 
-const answer = await ollama.call(`why is the sky blue?`);
+const answer = ollama.call("why is the sky blue?");
 
 console.log(answer);
 </script>  
