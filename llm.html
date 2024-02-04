@@ -1,17 +1,16 @@
 <html>
 <head>
-<script type="module" src="https://cdn.jsdelivr.net/npm/ollama-node@0.1.27/"></script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/ollama@0.4.5/dist/index.min.js"></script>
 </head>
 <body>
 <script>
-const ollama = new Ollama({
-  baseUrl: "http://localhost:11434", // Default value
-  model: "deepseek-coder:1.3b-instruct-q4_1", // Default value
-});
+import ollama from 'ollama'
 
-const answer = ollama.call("why is the sky blue?");
-
-console.log(answer);
+const response = await ollama.chat({
+  model: 'deepseek-coder:1.3b-instruct-q4_1',
+  messages: [{ role: 'user', content: 'Why is the sky blue?' }],
+})
+console.log(response.message.content)
 </script>  
 </body>
 </html>
