@@ -1,0 +1,25 @@
+<html>
+<head>
+</head>
+<body>
+import { Ollama } from "https://unpkg.com/@langchain/community/llms/ollama.js";
+
+const ollama = new Ollama({
+  baseUrl: "http://localhost:11434", // Default value
+  model: "deepseek-coder:1.3b-instruct-q4_1", // Default value
+});
+
+const stream = await ollama.stream(
+  `Translate "I love programming" into German.`
+);
+
+const chunks = [];
+for await (const chunk of stream) {
+  chunks.push(chunk);
+}
+
+console.log(chunks.join(""));
+  
+</body>
+</html>
+
