@@ -2,6 +2,7 @@
 <head>
 </head>
 <body>
+<script>
 import { Ollama } from "https://unpkg.com/@langchain/community/llms/ollama.js";
 
 const ollama = new Ollama({
@@ -19,7 +20,7 @@ for await (const chunk of stream) {
 }
 
 console.log(chunks.join(""));
-  
+</script>  
 </body>
 </html>
 
