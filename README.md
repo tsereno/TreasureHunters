@@ -1,1 +1,2 @@
-# TreasureHunters
+# Treasure Hunters
+# Go Adventure!
