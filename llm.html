@@ -1,10 +1,9 @@
 <html>
 <head>
+<script type="module" src="https://unpkg.com/@langchain/community/llms/ollama.js"></script>
 </head>
 <body>
 <script>
-import { Ollama } from "https://unpkg.com/@langchain/community/llms/ollama.js";
-
 const ollama = new Ollama({
   baseUrl: "http://localhost:11434", // Default value
   model: "deepseek-coder:1.3b-instruct-q4_1", // Default value
