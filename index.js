@@ -1,7 +1,13 @@
-import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0';
-
+import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.0';
 // Since we will download the model from the Hugging Face Hub, we can skip the local model check
 env.allowLocalModels = false;
+
+// Allocate a pipeline for sentiment-analysis
+let pipe = await pipeline('sentiment-analysis');
+
+let out = await pipe('I love transformers!');
+// [{'label': 'POSITIVE', 'score': 0.999817686}]
+console.log(out);
 
 // Reference the elements that we will need
 const status = document.getElementById('status');
