@@ -4,7 +4,7 @@
 </head>
 <body>
 <script>
-const response = await ollama.chat({
+const response = ollama.chat({
   model: 'deepseek-coder:1.3b-instruct-q4_1',
   messages: [{ role: 'user', content: 'Why is the sky blue?' }],
 })
