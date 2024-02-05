@@ -14,7 +14,7 @@ const context = "The current president of the United States is Joe Biden.";
 const input = tokenizer.encode(question + " [SEP] " + context, { returnTensors: "tf" });
 
 // Use the model to get the start and end positions of the answer in the context
-const outputs = await model.generateAnswer(input);
+const outputs = model.generateAnswer(input);
 const answerStart = outputs.logits[0].argMax(-1).dataSync()[0];
 const answerEnd = outputs.logits[1].argMax(-1).dataSync()[0];
 
