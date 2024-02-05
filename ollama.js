@@ -6,7 +6,7 @@ import { Ollama } from 'https://cdn.jsdelivr.net/npm/ollama-js-client/dist/brows
 //import Ollama from "ollama-js-client";
 
 // use global in the browser with script tag
-const Ollama = window.OllamaJS;
+//const Ollama = window.OllamaJS;
 
 import Ollama from "ollama-js-client";
 const response = await new Ollama({
