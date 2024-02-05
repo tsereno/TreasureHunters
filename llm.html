@@ -1,17 +1,1 @@
-<html>
-<head>
-</head>
-<body>
-<script type="module">
-import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.2';
-
-// Allocate a pipeline for sentiment-analysis
-let pipe = await pipeline('sentiment-analysis');
-
-let out = await pipe('I love transformers!');
-// [{'label': 'POSITIVE', 'score': 0.999817686}]
-console.log(out)
-</script>  
-</body>
-</html>
-
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Sentiment Analysis</title> </head> <body> <script type="module"> // Allocate a pipeline for sentiment-analysis (async () => { try { const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.2'); const pipe = await pipeline('sentiment-analysis'); const out = await pipe('I love transformers!'); console.log(out); } catch (error) { console.error('Error:', error); } })(); </script> </body> </html>
