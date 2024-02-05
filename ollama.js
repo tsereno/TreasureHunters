@@ -1,12 +1,4 @@
-//<script src="https://cdn.jsdelivr.net/npm/ollama-js-client/dist/browser/iife/ollama-js.global.js"></script>
-//<script type="module" src="https://cdn.jsdelivr.net/npm/ollama-js-client/dist/browser/index.js"></script>
 import { Ollama } from 'https://cdn.jsdelivr.net/npm/ollama-js-client/dist/browser/index.js';
-
-// use in the browser as a type="module" or in node with modules enabled (mjs)
-//import Ollama from "ollama-js-client";
-
-// use global in the browser with script tag
-//const Ollama = window.OllamaJS;
 
 const response = await new Ollama({
   model: "tinydolphin:1.1b-v2.8-q4_1",
