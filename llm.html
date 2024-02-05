@@ -4,8 +4,6 @@
 </head>
 <body>
 <script>
-import ollama from 'ollama'
-
 const response = await ollama.chat({
   model: 'deepseek-coder:1.3b-instruct-q4_1',
   messages: [{ role: 'user', content: 'Why is the sky blue?' }],
