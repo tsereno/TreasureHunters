@@ -1,11 +1,10 @@
 <html>
 <head>
-<script type="module">
-    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.2';
-</script>
 </head>
 <body>
-<script>
+<script type="module>
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.2';
+
 // Allocate a pipeline for sentiment-analysis
 let pipe = await pipeline('sentiment-analysis');
 
