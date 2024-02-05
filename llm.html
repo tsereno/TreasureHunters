@@ -1,14 +1,19 @@
 <html>
 <head>
 <script type="module">
-    import { ollama } from 'https://cdn.jsdelivr.net/npm/ollama@0.4.5/dist/index.min.js';
+<script type="module">
+    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.2';
+</script>
 </script>
 </head>
 <body>
 <script>
-const response = ollama.chat({
-  model: 'deepseek-coder:1.3b-instruct-q4_1',
-  messages: [{ role: 'user', content: 'Why is the sky blue?' }],
+// Allocate a pipeline for sentiment-analysis
+let pipe = await pipeline('sentiment-analysis');
+
+let out = await pipe('I love transformers!');
+// [{'label': 'POSITIVE', 'score': 0.999817686}]
+
 })
 console.log(response.message.content)
 </script>  
