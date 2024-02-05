@@ -10,9 +10,7 @@ let pipe = await pipeline('sentiment-analysis');
 
 let out = await pipe('I love transformers!');
 // [{'label': 'POSITIVE', 'score': 0.999817686}]
-
-})
-console.log(response.message.content)
+console.log(out)
 </script>  
 </body>
 </html>
