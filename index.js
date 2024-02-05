@@ -3,9 +3,9 @@ import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers
 env.allowLocalModels = false;
 
 // Allocate a pipeline for sentiment-analysis
-let pipe = await pipeline(task="text-generation", "cognitivecomputations/TinyDolphin-2.8-1.1b");
+let pipe = await pipeline('text-generation', 'cognitivecomputations/TinyDolphin-2.8-1.1b');
 
-let out = await pipe("How are you?");
+let out = await pipe('How are you?');
 console.log(out);
 
 // Reference the elements that we will need
