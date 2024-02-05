@@ -1,1 +1,26 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Sentiment Analysis</title> </head> <body> <script type="module"> // Allocate a pipeline for sentiment-analysis (async () => { try { const { pipeline } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.2'); const pipe = await pipeline('sentiment-analysis'); const out = await pipe('I love transformers!'); console.log(out); } catch (error) { console.error('Error:', error); } })(); </script> </body> </html>
+<html>
+<head>
+</head>
+<body>
+<script src="https://cdn.jsdelivr.net/npm/@huggingface/transformers@2.9.1/dist/transformers.min.js"></script>
+<script>
+  // The question we want to answer
+const question = "Who is the president of the United States?";
+
+// The context that the model will use to answer the question
+const context = "The current president of the United States is Joe Biden.";
+
+// Tokenize the context and question
+const input = tokenizer.encode(question + " [SEP] " + context, { returnTensors: "tf" });
+
+// Use the model to get the start and end positions of the answer in the context
+const outputs = await model.generateAnswer(input);
+const answerStart = outputs.logits[0].argMax(-1).dataSync()[0];
+const answerEnd = outputs.logits[1].argMax(-1).dataSync()[0];
+
+// Get the actual answer
+const answer = context.substring(answerStart, answerEnd + 1);
+console.log(`The answer is: ${answer}`); // The answer is: Joe Biden.
+</script>
+</body>
+</html>
