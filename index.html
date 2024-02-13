@@ -47,74 +47,79 @@
 <body>
     <div id="canvasZone"><canvas id="renderCanvas"></canvas></div>
     <script>
-        var canvas = document.getElementById("renderCanvas");
+    var canvas = document.getElementById("renderCanvas");
 
-        var startRenderLoop = function (engine, canvas) {
-            engine.runRenderLoop(function () {
-                if (sceneToRender && sceneToRender.activeCamera) {
-                    sceneToRender.render();
-                }
-            });
-        }
+    var startRenderLoop = function (engine, canvas) {
+        engine.runRenderLoop(function () {
+            if (sceneToRender && sceneToRender.activeCamera) {
+                sceneToRender.render();
+            }
+        });
+    }
 
-        var engine = null;
-        var scene = null;
-        var sceneToRender = null;
-        var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
-        var createScene = function () {
-    // This creates a basic Babylon Scene object (non-mesh)
-    var scene = new BABYLON.Scene(engine);
-
-    // This creates and positions a free camera (non-mesh)
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
-
-    // This targets the camera to scene origin
-    camera.setTarget(BABYLON.Vector3.Zero());
-
-    // This attaches the camera to the canvas
-    camera.attachControl(canvas, true);
-
-    // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
-    var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
-
-    // Default intensity is 1. Let's dim the light a small amount
-    light.intensity = 0.7;
-
-    // Our built-in 'sphere' shape.
-    var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
-
-    // Move the sphere upward 1/2 its height
-    sphere.position.y = 1;
-
-    const music = new BABYLON.Sound("music", "intro.mp3", scene, null, {
-      loop: true,
-      autoplay: true,
-      spatialSound: true,
-      playbackRate: 1.0,
-      volume: .1
-    });
-
-    const gunshot = new BABYLON.Sound("gunshot", "gunshot.wav", scene);
+    var engine = null;
+    var scene = null;
+    var sceneToRender = null;
+    var createDefaultEngine = function() { return new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true,  disableWebGL2Support: false}); };
+    var createScene = function () {
+        // This creates a basic Babylon Scene object (non-mesh)
+        var scene = new BABYLON.Scene(engine);
     
-    window.addEventListener("mousedown", function (evt) {
-      // left click to fire
-      if (evt.button === 0) {
-        gunshot.play();
-      }
-    });
+        // This creates and positions a free camera (non-mesh)
+        var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene);
     
-    window.addEventListener("keydown", function (evt) {
-      // Press space key to fire
-      if (evt.keyCode === 32) {
-        gunshot.play();
-      }
-    });
-            
-    // Our built-in 'ground' shape.
-    var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
-          
-    return scene;
-};
+        // This targets the camera to scene origin
+        camera.setTarget(BABYLON.Vector3.Zero());
+    
+        // This attaches the camera to the canvas
+        camera.attachControl(canvas, true);
+    
+        // This creates a light, aiming 0,1,0 - to the sky (non-mesh)
+        var light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+    
+        // Default intensity is 1. Let's dim the light a small amount
+        light.intensity = 0.7;
+    
+        //BABYLON.SceneLoader.Append("./", "DamagedHelmet.gltf", scene, function (meshes) {
+        //    scene.createDefaultCameraOrLight(true, true, true);
+        //    scene.createDefaultEnvironment();       
+        //});
+                
+        // Our built-in 'sphere' shape.
+        var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
+    
+        // Move the sphere upward 1/2 its height
+        sphere.position.y = 1;
+    
+        const music = new BABYLON.Sound("music", "intro.mp3", scene, null, {
+          loop: true,
+          autoplay: true,
+          spatialSound: true,
+          playbackRate: 1.0,
+          volume: .1
+        });
+    
+        const gunshot = new BABYLON.Sound("gunshot", "gunshot.wav", scene);
+        
+        window.addEventListener("mousedown", function (evt) {
+          // left click to fire
+          if (evt.button === 0) {
+            gunshot.play();
+          }
+        });
+        
+        window.addEventListener("keydown", function (evt) {
+          // Press space key to fire
+          if (evt.keyCode === 32) {
+            gunshot.play();
+          }
+        });
+                
+        // Our built-in 'ground' shape.
+        var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
+              
+        return scene;
+    };
                 window.initFunction = async function() {
                     
                     
