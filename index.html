@@ -93,6 +93,22 @@
       playbackRate: 1.0,
       volume: .1
     });
+
+    const gunshot = new BABYLON.Sound("gunshot", "gunshot.wav", scene);
+    
+    window.addEventListener("mousedown", function (evt) {
+      // left click to fire
+      if (evt.button === 0) {
+        gunshot.play();
+      }
+    });
+    
+    window.addEventListener("keydown", function (evt) {
+      // Press space key to fire
+      if (evt.keyCode === 32) {
+        gunshot.play();
+      }
+    });
             
     // Our built-in 'ground' shape.
     var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
