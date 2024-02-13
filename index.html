@@ -84,7 +84,14 @@
         //    scene.createDefaultCameraOrLight(true, true, true);
         //    scene.createDefaultEnvironment();       
         //});
-                
+        
+        var fontData = await (await fetch("https://assets.babylonjs.com/fonts/Droid Sans_Regular.json")).json();
+        var myText = BABYLON.MeshBuilder.CreateText("Title", "Treasure Hunters", fontData, {
+            size: 32,
+            resolution: 64, 
+            depth: 16
+        });
+
         // Our built-in 'sphere' shape.
         var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
     
