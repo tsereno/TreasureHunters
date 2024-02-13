@@ -86,6 +86,12 @@
     // Move the sphere upward 1/2 its height
     sphere.position.y = 1;
 
+   var music = new BABYLON.Sound("Violons", "sounds/violons11.wav", scene, function () {
+    }, { loop: true, autoplay: true });
+
+    // Sound will now follow the mesh position
+    music.attachToMesh(sphere);
+
     // Our built-in 'ground' shape.
     var ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
           
