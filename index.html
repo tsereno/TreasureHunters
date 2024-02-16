@@ -88,13 +88,14 @@
         // Our built-in 'sphere' shape.
         var sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2, segments: 32}, scene);
         
-        BABYLON.SceneLoader.ImportMesh("", Assets.meshes.aerobatic_plane.rootUrl, Assets.meshes.aerobatic_plane.filename, scene, function (meshes) {          
+        plane = BABYLON.SceneLoader.ImportMesh("", Assets.meshes.aerobatic_plane.rootUrl, Assets.meshes.aerobatic_plane.filename, scene, function (meshes) {          
             scene.createDefaultCameraOrLight(true, true, true);
             scene.createDefaultEnvironment();      
         });
         
         // Move the sphere upward 1/2 its height
         sphere.position.y = 1;
+        plane.position.y = 1;
     
         const music = new BABYLON.Sound("music", "intro.mp3", scene, null, {
           loop: true,
