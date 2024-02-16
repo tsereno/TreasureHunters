@@ -92,19 +92,13 @@
         //use the Inspector in the Playground to check the 'nodes'
         var meshNames = ["Cylinder","Cylinder_002"];
     
-        // The first parameter can be used to specify which mesh to import. 
-        // null or "" will import all meshes of "candle.babylon"
-        // you can use the Inspector to check which meshes could be used
-        BABYLON.SceneLoader.ImportMesh(meshNames, "scenes/", "aerobatic_plane.glb", scene, function (newMeshes) {
+        BABYLON.SceneLoader.Append("scenes/", "aerobatic_plane.glb", scene, function (scene) {
+            // Create a default arc rotate camera and light.
+            scene.createDefaultCameraOrLight(true, true, true);
     
-            // Set the target of the camera to the first imported mesh
-            camera.target = newMeshes[0];
-    
-            //log the name of the meshes we just imported
-            for(var i = 0; i < newMeshes.length; i++){
-                console.log(newMeshes[i].name);
-            }
-    
+            // The default camera looks at the back of the asset.
+            // Rotate the camera by 180 degrees to the front of the asset.
+            scene.activeCamera.alpha += Math.PI;
         });
         
         // Move the sphere upward 1/2 its height
