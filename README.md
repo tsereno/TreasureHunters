@@ -1,2 +1,2 @@
 # Treasure Hunters
-# Go Adventure!
+# Go Adventure.  Have Fun!
