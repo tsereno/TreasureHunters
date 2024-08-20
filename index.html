@@ -2,65 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <title>The Adventures: Spirit Worlds - Rainbow Forest</title>
     <link rel="stylesheet" href="css/style.css">
-    <!-- Add THREE.js before A-Frame -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <script src="https://raw.githack.com/donmccurdy/aframe-extras/master/dist/aframe-extras.loaders.min.js"></script>
 </head>
-<body>
-    <div id="splash-screen">
+<body style="margin: 0; overflow: hidden;">
+    <div id="start-screen">
         <h1>The Adventures: Spirit Worlds</h1>
-        <h2>Episode 1: Rainbow Forest</h2>
+        <h2>Rainbow Forest</h2>
         <button id="start-game">Start Game</button>
     </div>
 
-    <div id="game-container" style="display: none;">
-        <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-            <a-camera gps-camera rotation-reader></a-camera>
-        </a-scene>
-    </div>
-
-    <div id="player-setup" style="display: none;">
-        <h2>Player Setup</h2>
-        <div id="player-forms"></div>
-        <button id="start-ar-game">Start AR Game</button>
-    </div>
-
-    <div id="game-ui" style="display: none;">
+    <div id="game-ui" style="display: none; position: absolute; top: 10px; left: 10px; z-index: 100;">
         <div id="score-container"></div>
-        <div id="timer"></div>
         <div id="backpack"></div>
-        <button id="chat-toggle">Chat</button>
+        <div id="timer"></div>
     </div>
 
-    <div id="chat-window" style="display: none;">
-        <div id="chat-messages"></div>
-        <input type="text" id="chat-input" placeholder="Type your message...">
-        <button id="send-message">Send</button>
-    </div>
+    <a-scene id="ar-scene" embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false" style="display: none;">
+        <a-marker preset="hiro">
+            <!-- AR content will be added here -->
+        </a-marker>
+        <a-entity camera></a-entity>
+    </a-scene>
 
     <script src="js/main.js" type="module"></script>
-	
-	<div id="game-container" style="display: none;">
-        <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-            <a-assets>
-                <a-asset-item id="coin-model" src="assets/models/coin.glb"></a-asset-item>
-                <a-asset-item id="gem-model" src="assets/models/coin.glb"></a-asset-item>
-                <a-asset-item id="key-model" src="assets/models/coin.gltf"></a-asset-item>
-                <a-asset-item id="potion-model" src="assets/models/coin.glb"></a-asset-item>
-            </a-assets>
-
-            <a-camera gps-camera rotation-reader>
-                <a-cursor></a-cursor>
-            </a-camera>
-
-            <a-entity light="type: ambient; intensity: 0.5;"></a-entity>
-            <a-entity light="type: directional; intensity: 0.8;" position="-1 1 0"></a-entity>
-        </a-scene>
-    </div>
 </body>
 </html>
