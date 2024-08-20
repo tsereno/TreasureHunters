@@ -125,7 +125,3 @@ function showMessage(message) {
     setTimeout(() => document.body.removeChild(messageElement), 2000);
 }
 
-function playAudio(type) {
-    // This function will be implemented in the audio.js file
-    console.log(`Playing ${type} audio`);
-}
