@@ -2,51 +2,45 @@
 
 import { initAR } from './ar.js';
 import { Player } from './player.js';
+import { playAudio } from './audio.js';
 
 let players = [];
-let currentPlayer = 0;
+let currentPlayerIndex = 0;
+let gameTimer;
+const GAME_DURATION = 300; // 5 minutes in seconds
 
 export function initGame() {
-    // Create player setup forms
-    const playerForms = document.getElementById('player-forms');
-    for (let i = 0; i < 4; i++) {
-        const form = createPlayerForm(i + 1);
-        playerForms.appendChild(form);
-    }
+    const startButton = document.getElementById('start-game');
+    startButton.addEventListener('click', startARGame);
 }
 
-function createPlayerForm(playerNumber) {
-    const form = document.createElement('div');
-    form.innerHTML = `
-        <h3>Player ${playerNumber}</h3>
-        <input type="text" id="player${playerNumber}-name" placeholder="Enter name">
-        <select id="player${playerNumber}-avatar">
-            <option value="avatar1">Avatar 1</option>
-            <option value="avatar2">Avatar 2</option>
-            <option value="avatar3">Avatar 3</option>
-        </select>
-    `;
-    return form;
-}
+function startARGame() {
+    // Initialize players (you can add more player initialization logic here)
+    players.push(new Player("Player 1", "avatar1"));
 
-export function startARGame() {
-    // Initialize players
-    for (let i = 1; i <= 4; i++) {
-        const name = document.getElementById(`player${i}-name`).value;
-        const avatar = document.getElementById(`player${i}-avatar`).value;
-        if (name) {
-            players.push(new Player(name, avatar));
-        }
-    }
+    // Hide start screen and show game UI
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('game-ui').style.display = 'block';
+    document.getElementById('ar-scene').style.display = 'block';
 
     // Initialize AR environment
     initAR();
-	
-    const scene = document.querySelector('a-scene');
-    scene.addEventListener('click', onSceneClick);
 
     // Set up game loop
     gameLoop();
+
+    // Add event listener for object interactions
+    const scene = document.querySelector('a-scene');
+    scene.addEventListener('click', onSceneClick);
+
+    // Start game timer
+    startGameTimer();
+
+    // Initial UI update
+    updateUI();
+
+    // Play game start audio
+    playAudio('gameStart');
 }
 
 function onSceneClick(event) {
