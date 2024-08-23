@@ -49,6 +49,8 @@ function onSceneClick(event) {
         collectObject(clickedEl);
     } else if (clickedEl && clickedEl.classList.contains('avoid')) {
         avoidObject(clickedEl);
+    } else if (clickedEl && clickedEl.id === 'treasure-chest') {
+        openTreasureChest(clickedEl);
     }
 }
 
@@ -125,3 +127,32 @@ function showMessage(message) {
     setTimeout(() => document.body.removeChild(messageElement), 2000);
 }
 
+function openTreasureChest(chest) {
+    const currentPlayer = players[currentPlayerIndex];
+    
+    // Animate the chest opening
+    const lid = chest.querySelector('a-box:nth-child(2)');
+    lid.setAttribute('animation', {
+        property: 'rotation',
+        to: '-90 0 0',
+        dur: 1000,
+        easing: 'easeOutQuad'
+    });
+    
+    // Add a special item to the player's backpack
+    const specialItem = 'Golden Key';
+    if (currentPlayer.addToBackpack(specialItem)) {
+        currentPlayer.updateScore(50);  // Add 50 points for finding the treasure
+        playAudio('treasureFound');
+        showMessage(`You found a ${specialItem}!`);
+        
+        // Remove the chest from the scene after a delay
+        setTimeout(() => {
+            chest.parentNode.removeChild(chest);
+        }, 2000);
+    } else {
+        showMessage("Your backpack is full! Make room for the treasure.");
+    }
+    
+    updateUI();
+}
