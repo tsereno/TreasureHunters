@@ -7,12 +7,35 @@
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script>
         AFRAME.registerComponent('change-color-on-click', {
+            schema: {
+                color: {default: 'red'}
+            },
             init: function () {
+                var data = this.data;
                 var el = this.el;
-                
+                var defaultColor = el.getAttribute('material').color;
+                var isClicked = false;
+
                 el.addEventListener('click', function () {
-                    var randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-                    el.setAttribute('color', randomColor);
+                    if (!isClicked) {
+                        el.setAttribute('color', data.color);
+                        isClicked = true;
+                    } else {
+                        el.setAttribute('color', defaultColor);
+                        isClicked = false;
+                    }
+                });
+
+                el.addEventListener('mouseenter', function () {
+                    if (!isClicked) {
+                        el.setAttribute('color', data.color);
+                    }
+                });
+
+                el.addEventListener('mouseleave', function () {
+                    if (!isClicked) {
+                        el.setAttribute('color', defaultColor);
+                    }
                 });
             }
         });
@@ -21,24 +44,19 @@
 <body>
     <a-scene>
         <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"
-               change-color-on-click>
+               change-color-on-click="color: yellow">
         </a-box>
         <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"
-                  change-color-on-click>
+                  change-color-on-click="color: green">
         </a-sphere>
         <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"
-                    change-color-on-click>
+                    change-color-on-click="color: blue">
         </a-cylinder>
         <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
         <a-sky color="#ECECEC"></a-sky>
-        <a-entity camera look-controls position="0 1.6 0">
-            <a-entity cursor="fuse: true; fuseTimeout: 500"
-                      position="0 0 -1"
-                      geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
-                      material="color: black; shader: flat"
-                      raycaster>
-            </a-entity>
-        </a-entity>
+        <a-camera>
+            <a-cursor></a-cursor>
+        </a-camera>
     </a-scene>
 </body>
 </html>
