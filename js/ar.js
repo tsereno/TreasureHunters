@@ -5,6 +5,7 @@ export function initAR() {
 
     // Create AR objects
     createRainbowArch(marker);
+    createTreasureChest(marker);
     addRandomObjects(marker, 10);
     addAvoidObjects(marker, 5);
 }
@@ -68,4 +69,47 @@ function getColorForType(type) {
         case 'potion': return 'green';
         default: return 'gray';
     }
+
+function createTreasureChest(parent) {
+    const chest = document.createElement('a-entity');
+    chest.setAttribute('id', 'treasure-chest');
+    
+    // Create the main body of the chest
+    const body = document.createElement('a-box');
+    body.setAttribute('width', '0.3');
+    body.setAttribute('height', '0.2');
+    body.setAttribute('depth', '0.2');
+    body.setAttribute('color', '#8B4513');
+    body.setAttribute('position', '0 0.1 0');
+    
+    // Create the lid of the chest
+    const lid = document.createElement('a-box');
+    lid.setAttribute('width', '0.32');
+    lid.setAttribute('height', '0.05');
+    lid.setAttribute('depth', '0.22');
+    lid.setAttribute('color', '#8B4513');
+    lid.setAttribute('position', '0 0.225 -0.01');
+    
+    // Create golden details
+    const detailFront = document.createElement('a-box');
+    detailFront.setAttribute('width', '0.05');
+    detailFront.setAttribute('height', '0.05');
+    detailFront.setAttribute('depth', '0.01');
+    detailFront.setAttribute('color', 'gold');
+    detailFront.setAttribute('position', '0 0.1 0.101');
+    
+    // Add all parts to the chest entity
+    chest.appendChild(body);
+    chest.appendChild(lid);
+    chest.appendChild(detailFront);
+    
+    // Position the chest in the scene
+    chest.setAttribute('position', '0 0 -0.5');
+    chest.setAttribute('rotation', '0 0 0');
+    chest.setAttribute('scale', '0.5 0.5 0.5');
+    
+    // Make the chest interactable
+    chest.setAttribute('class', 'interactable');
+    
+    parent.appendChild(chest);
 }
