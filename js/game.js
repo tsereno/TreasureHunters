@@ -156,3 +156,28 @@ function openTreasureChest(chest) {
     
     updateUI();
 }
+
+function startGameTimer() {
+    let timeLeft = GAME_DURATION;
+
+    const timerInterval = setInterval(() => {
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            endGame();
+        } else {
+            timeLeft--;
+            updateTimerUI(timeLeft);
+        }
+    }, 1000);
+}
+
+function updateTimerUI(timeLeft) {
+    const timerContainer = document.getElementById('timer-container');
+    timerContainer.textContent = `Time Left: ${timeLeft} seconds`;
+}
+
+function endGame() {
+    // Logic to end the game
+    showMessage("Time's up! Game over.");
+    // Optionally, you can reset the game or show final scores
+}
