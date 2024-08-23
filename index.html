@@ -20,13 +20,8 @@
         <div id="backpack"></div>
         <div id="timer"></div>
     </div>
-
-  <a-scene embedded arjs>
-    <!-- create your content here. just a box for now -->
-   <a-image rotation="-90 0 0" src="https://i.cdn.nrholding.net/43142277/2000/2000"></a-image>
-    <!-- define a camera which will move according to the marker position -->
-    <a-marker-camera preset='hiro'></a-marker-camera>
-  </a-scene>
+    
+<a-scene id="ar-scene" style="display:none;"></a-scene>
     
     <script src="js/main.js" type="module"></script>
 </body>
