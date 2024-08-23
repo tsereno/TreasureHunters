@@ -40,7 +40,7 @@ function startARGame() {
     updateUI();
 
     // Play game start audio
-    playAudio('gameStart');
+    //playAudio('gameStart');
 }
 
 function onSceneClick(event) {
