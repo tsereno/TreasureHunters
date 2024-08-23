@@ -69,6 +69,7 @@ function getColorForType(type) {
         case 'potion': return 'green';
         default: return 'gray';
     }
+}
 
 function createTreasureChest(parent) {
     const chest = document.createElement('a-entity');
