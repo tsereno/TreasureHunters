@@ -25,16 +25,31 @@
                         isClicked = false;
                     }
                 });
+            }
+        });
 
-                el.addEventListener('mouseenter', function () {
-                    if (!isClicked) {
-                        el.setAttribute('color', data.color);
-                    }
+        AFRAME.registerComponent('raycaster-listener', {
+            init: function () {
+                this.el.addEventListener('raycaster-intersected', function () {
+                    this.intersected = true;
                 });
+                this.el.addEventListener('raycaster-intersected-cleared', function () {
+                    this.intersected = false;
+                });
+            }
+        });
 
-                el.addEventListener('mouseleave', function () {
-                    if (!isClicked) {
-                        el.setAttribute('color', defaultColor);
+        AFRAME.registerComponent('click-listener', {
+            init: function () {
+                var sceneEl = this.el.sceneEl;
+                var canvasEl = sceneEl.canvas;
+
+                canvasEl.addEventListener('click', function (evt) {
+                    var mouseEvent = evt.detail.mouseEvent;
+                    var intersectedEl = mouseEvent.target.closest('[raycaster-listener]');
+                    
+                    if (intersectedEl) {
+                        intersectedEl.emit('click');
                     }
                 });
             }
@@ -42,20 +57,23 @@
     </script>
 </head>
 <body>
-    <a-scene>
+    <a-scene click-listener>
         <a-box position="-1 0.5 -3" rotation="0 45 0" color="#4CC3D9"
-               change-color-on-click="color: yellow">
+               change-color-on-click="color: yellow"
+               raycaster-listener>
         </a-box>
         <a-sphere position="0 1.25 -5" radius="1.25" color="#EF2D5E"
-                  change-color-on-click="color: green">
+                  change-color-on-click="color: green"
+                  raycaster-listener>
         </a-sphere>
         <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" color="#FFC65D"
-                    change-color-on-click="color: blue">
+                    change-color-on-click="color: blue"
+                    raycaster-listener>
         </a-cylinder>
         <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane>
         <a-sky color="#ECECEC"></a-sky>
         <a-camera>
-            <a-cursor></a-cursor>
+            <a-entity raycaster="objects: [raycaster-listener]" cursor="rayOrigin: mouse"></a-entity>
         </a-camera>
     </a-scene>
 </body>
