@@ -72,35 +72,43 @@ navigator.mediaDevices.getUserMedia({ video: true })
         console.log("An error occurred: " + err);
     });
 
-// Create GUI
-const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-// Create a virtual joystick
-const leftJoystick = new BABYLON.GUI.VirtualJoystick(false);
-leftJoystick.setJoystickSensibility(0.2);
-leftJoystick.setAxisForUpAndDown(BABYLON.JoystickAxis.Y);
-leftJoystick.setAxisForLeftAndRight(BABYLON.JoystickAxis.X);
-leftJoystick.setJoystickColor("blue");
-advancedTexture.addControl(leftJoystick);
-
-// Joystick variables
-let xAddPos = 0;
-let yAddPos = 0;
-const speed = 0.1;
-
-// Update loop
+// Add simple movement to the sphere
+let time = 0;
 scene.registerBeforeRender(function () {
-    xAddPos = leftJoystick.deltaPosition.x * speed;
-    yAddPos = leftJoystick.deltaPosition.y * speed;
-    
-    // Update sphere position based on joystick input
-    sphere.position.x += xAddPos;
-    sphere.position.y -= yAddPos;
-
-    // Keep the sphere within bounds
-    sphere.position.x = BABYLON.Scalar.Clamp(sphere.position.x, -7, 7);
-    sphere.position.y = BABYLON.Scalar.Clamp(sphere.position.y, -4, 4);
+    time += 0.01;
+    sphere.position.x = Math.sin(time) * 3;
+    sphere.position.y = Math.cos(time) * 3;
 });
+
+// Set up touch joystick
+class FreeCameraTouchVirtualJoystickInput extends BABYLON.BaseCameraPointersInput {
+    // ... (Copy the entire FreeCameraTouchVirtualJoystickInput class here)
+}
+
+// Set gravity for the scene (G force like, on Y-axis)
+scene.gravity = new BABYLON.Vector3(0, -9.81 / 60, 0);
+
+// Enable Collisions
+scene.collisionsEnabled = true;
+
+// Apply collisions and gravity to the camera
+camera.checkCollisions = true;
+camera.applyGravity = true;
+
+// Set the ellipsoid around the camera (e.g. your player's size)
+camera.ellipsoid = new BABYLON.Vector3(1, 1, 1);
+
+// Set collision for objects
+videoPlane.checkCollisions = true;
+sphere.checkCollisions = true;
+
+// Add our custom Joystick+Swipe input
+camera.inputs.clear()
+camera.inputs.add(new FreeCameraTouchVirtualJoystickInput())
+camera.attachControl(canvas, true);
+camera.speed = 2
+BABYLON.Engine.CollisionsEpsilon = 0.0001; // acts as a deadzone for joystick
+camera.inertia = 0.8
 
 // Render loop
 engine.runRenderLoop(function () {
@@ -110,6 +118,7 @@ engine.runRenderLoop(function () {
 // Resize event
 window.addEventListener("resize", function () {
     engine.resize();
-});    </script>
+});
+</script>
 </body>
 </html>
