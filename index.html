@@ -33,7 +33,7 @@ const engine = new BABYLON.Engine(canvas, true);
 const scene = new BABYLON.Scene(engine);
 
 // Create a camera
-const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 0, -5), scene);
+const camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 0, -10), scene);
 camera.setTarget(BABYLON.Vector3.Zero());
 
 // Create a light
@@ -44,16 +44,22 @@ const videoElement = document.getElementById("inputVideo");
 const videoTexture = new BABYLON.VideoTexture("video", videoElement, scene, true);
 
 // Create a plane to display the video
-const videoPlane = BABYLON.MeshBuilder.CreatePlane("videoPlane", {width: 6.4, height: 4.8}, scene);
-videoPlane.position.z = 5;
+const videoPlane = BABYLON.MeshBuilder.CreatePlane("videoPlane", {width: 16, height: 9}, scene);
+videoPlane.position.z = 10;
 const videoMaterial = new BABYLON.StandardMaterial("videoMaterial", scene);
 videoMaterial.diffuseTexture = videoTexture;
 videoMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
 videoPlane.material = videoMaterial;
 
 // Create a simple 3D object (a sphere)
-const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 0.5}, scene);
-sphere.position.z = 2;  // Position the sphere in front of the video plane
+const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 2}, scene);
+sphere.position.z = 0;  // Position the sphere at the center
+
+// Add material to the sphere
+const sphereMaterial = new BABYLON.StandardMaterial("sphereMaterial", scene);
+sphereMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red color
+sphereMaterial.alpha = 0.7; // Make it slightly transparent
+sphere.material = sphereMaterial;
 
 // Start the webcam
 navigator.mediaDevices.getUserMedia({ video: true })
@@ -64,6 +70,14 @@ navigator.mediaDevices.getUserMedia({ video: true })
     .catch(function(err) {
         console.log("An error occurred: " + err);
     });
+
+// Add movement to the sphere
+let time = 0;
+scene.registerBeforeRender(function () {
+    time += 0.01;
+    sphere.position.x = Math.sin(time) * 3;
+    sphere.position.y = Math.cos(time) * 3;
+});
 
 // Render loop
 engine.runRenderLoop(function () {
