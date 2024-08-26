@@ -24,11 +24,10 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/vision_bundle.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
 </head>
 <body>
-    <canvas id="renderCanvas"></canvas>
-    <video id="inputVideo" style="display: none;"></video>
-    <script>
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 const scene = new BABYLON.Scene(engine);
@@ -62,15 +61,73 @@ sphereMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0); // Red color
 sphereMaterial.alpha = 0.7; // Make it slightly transparent
 sphere.material = sphereMaterial;
 
-// Start the webcam
-navigator.mediaDevices.getUserMedia({ video: true })
-    .then(function(stream) {
-        videoElement.srcObject = stream;
-        videoElement.play();
-    })
-    .catch(function(err) {
-        console.log("An error occurred: " + err);
+// Create a 2D canvas for drawing bounding boxes
+const objectDetectionCanvas = document.createElement('canvas');
+objectDetectionCanvas.width = videoElement.width;
+objectDetectionCanvas.height = videoElement.height;
+const ctx = objectDetectionCanvas.getContext('2d');
+
+// Create a dynamic texture for the object detection overlay
+const objectDetectionTexture = new BABYLON.DynamicTexture("objectDetectionTexture", {width: videoElement.width, height: videoElement.height}, scene);
+const objectDetectionMaterial = new BABYLON.StandardMaterial("objectDetectionMaterial", scene);
+objectDetectionMaterial.diffuseTexture = objectDetectionTexture;
+objectDetectionMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+objectDetectionMaterial.emissiveColor = new BABYLON.Color3(1, 1, 1);
+objectDetectionMaterial.alpha = 0.7;
+
+// Create a plane for the object detection overlay
+const objectDetectionPlane = BABYLON.MeshBuilder.CreatePlane("objectDetectionPlane", {width: 16, height: 9}, scene);
+objectDetectionPlane.position.z = 10.01; // Slightly in front of the video plane
+objectDetectionPlane.material = objectDetectionMaterial;
+
+// Start the webcam and object detection
+let objectDetector;
+const initializeObjectDetection = async () => {
+    const vision = await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm");
+    objectDetector = await ObjectDetector.createFromOptions(vision, {
+        baseOptions: {
+            modelAssetPath: "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite",
+            delegate: "GPU"
+        },
+        scoreThreshold: 0.5,
+        maxResults: 5
     });
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+            videoElement.srcObject = stream;
+            videoElement.play();
+            detectObjects();
+        })
+        .catch(function(err) {
+            console.log("An error occurred: " + err);
+        });
+};
+
+const detectObjects = async () => {
+    if (videoElement.readyState === 4) {
+        const detections = await objectDetector.detect(videoElement);
+        drawDetections(detections);
+    }
+    requestAnimationFrame(detectObjects);
+};
+
+const drawDetections = (detections) => {
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    
+    for (const detection of detections) {
+        const [x, y, width, height] = detection.boundingBox;
+        ctx.strokeStyle = "#00FF00";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, y, width, height);
+        
+        ctx.fillStyle = "#00FF00";
+        ctx.font = "18px Arial";
+        ctx.fillText(detection.categories[0].categoryName, x, y > 20 ? y - 5 : y + 20);
+    }
+    
+    objectDetectionTexture.update(objectDetectionCanvas);
+};
 
 // Virtual Joystick
 let leftJoystick = new BABYLON.VirtualJoystick(true);
@@ -92,6 +149,9 @@ scene.collisionsEnabled = true;
 sphere.checkCollisions = true;
 videoPlane.checkCollisions = true;
 
+// Initialize object detection
+initializeObjectDetection();
+
 // Render loop
 engine.runRenderLoop(function () {
     scene.render();
@@ -101,6 +161,6 @@ engine.runRenderLoop(function () {
 window.addEventListener("resize", function () {
     engine.resize();
 });
-    </script>
+</script>
 </body>
 </html>
