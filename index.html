@@ -19,6 +19,7 @@
     </style>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
     <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <script src="https://cdn.babylonjs.com/gui/babylon.gui.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
@@ -71,12 +72,34 @@ navigator.mediaDevices.getUserMedia({ video: true })
         console.log("An error occurred: " + err);
     });
 
-// Add movement to the sphere
-let time = 0;
+// Create GUI
+const advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+// Create a virtual joystick
+const leftJoystick = new BABYLON.GUI.VirtualJoystick(false);
+leftJoystick.setJoystickSensibility(0.2);
+leftJoystick.setAxisForUpAndDown(BABYLON.JoystickAxis.Y);
+leftJoystick.setAxisForLeftAndRight(BABYLON.JoystickAxis.X);
+leftJoystick.setJoystickColor("blue");
+advancedTexture.addControl(leftJoystick);
+
+// Joystick variables
+let xAddPos = 0;
+let yAddPos = 0;
+const speed = 0.1;
+
+// Update loop
 scene.registerBeforeRender(function () {
-    time += 0.01;
-    sphere.position.x = Math.sin(time) * 3;
-    sphere.position.y = Math.cos(time) * 3;
+    xAddPos = leftJoystick.deltaPosition.x * speed;
+    yAddPos = leftJoystick.deltaPosition.y * speed;
+    
+    // Update sphere position based on joystick input
+    sphere.position.x += xAddPos;
+    sphere.position.y -= yAddPos;
+
+    // Keep the sphere within bounds
+    sphere.position.x = BABYLON.Scalar.Clamp(sphere.position.x, -7, 7);
+    sphere.position.y = BABYLON.Scalar.Clamp(sphere.position.y, -4, 4);
 });
 
 // Render loop
@@ -87,7 +110,6 @@ engine.runRenderLoop(function () {
 // Resize event
 window.addEventListener("resize", function () {
     engine.resize();
-});
-    </script>
+});    </script>
 </body>
 </html>
