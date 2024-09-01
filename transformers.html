@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Text with Transformers.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+        }
+        #imagePreview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 20px;
+        }
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        #loading {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image to Text</h1>
+    <input type="file" id="imageUpload" accept="image/*">
+    <img id="imagePreview" style="display: none;">
+    <div id="loading">Processing...</div>
+    <div id="result"></div>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const imagePreview = document.getElementById('imagePreview');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+
+        let pipeline;
+
+        // Initialize the pipeline
+        async function init() {
+            pipeline = await transformers.pipeline('image-to-text', 'Xenova/vit-gpt2-image-captioning');
+        }
+
+        init();
+
+        imageUpload.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async function (event) {
+                    imagePreview.src = event.target.result;
+                    imagePreview.style.display = 'block';
+                    loading.style.display = 'block';
+                    result.textContent = '';
+
+                    try {
+                        const output = await pipeline(event.target.result);
+                        result.textContent = output[0].generated_text;
+                    } catch (error) {
+                        console.error('Error processing image:', error);
+                        result.textContent = 'Error processing image. Please try again.';
+                    } finally {
+                        loading.style.display = 'none';
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>
