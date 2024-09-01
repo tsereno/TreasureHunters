@@ -1,79 +1,98 @@
-import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.1';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Classification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #container {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-top: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .result-item {
+            margin-bottom: 10px;
+        }
+        .label {
+            font-weight: bold;
+        }
+        .score {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Classification</h1>
+    <p id="status">Loading model...</p>
+    <input type="file" id="upload" accept="image/*">
+    <button id="example">Run example</button>
+    <div id="container"></div>
+    <div id="results"></div>
 
-// Since we will download the model from the Hugging Face Hub, we can skip the local model check
-env.allowLocalModels = false;
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.1';
 
-// Reference the elements that we will need
-const status = document.getElementById('status');
-const fileUpload = document.getElementById('upload');
-const imageContainer = document.getElementById('container');
-const example = document.getElementById('example');
+        env.allowLocalModels = false;
 
-const EXAMPLE_URL = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/city-streets.jpg';
+        const status = document.getElementById('status');
+        const fileUpload = document.getElementById('upload');
+        const imageContainer = document.getElementById('container');
+        const example = document.getElementById('example');
+        const resultsContainer = document.getElementById('results');
 
-// Create a new object detection pipeline
-status.textContent = 'Loading model...';
-const detector = await pipeline('object-detection', 'Xenova/detr-resnet-50');
-status.textContent = 'Ready';
+        const EXAMPLE_URL = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/city-streets.jpg';
 
-example.addEventListener('click', (e) => {
-    e.preventDefault();
-    detect(EXAMPLE_URL);
-});
+        status.textContent = 'Loading model...';
+        const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
+        status.textContent = 'Ready';
 
-fileUpload.addEventListener('change', function (e) {
-    const file = e.target.files[0];
-    if (!file) {
-        return;
-    }
+        example.addEventListener('click', (e) => {
+            e.preventDefault();
+            classify(EXAMPLE_URL);
+        });
 
-    const reader = new FileReader();
+        fileUpload.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
 
-    // Set up a callback when the file is loaded
-    reader.onload = e2 => detect(e2.target.result);
+            const reader = new FileReader();
+            reader.onload = e2 => classify(e2.target.result);
+            reader.readAsDataURL(file);
+        });
 
-    reader.readAsDataURL(file);
-});
+        async function classify(img) {
+            imageContainer.innerHTML = '';
+            imageContainer.style.backgroundImage = `url(${img})`;
+            resultsContainer.innerHTML = '';
 
+            status.textContent = 'Classifying...';
+            const output = await classifier(img, { topk: 5 });
+            status.textContent = '';
+            
+            output.forEach(renderResult);
+        }
 
-// Detect objects in the image
-async function detect(img) {
-    imageContainer.innerHTML = '';
-    imageContainer.style.backgroundImage = `url(${img})`;
-
-    status.textContent = 'Analysing...';
-    const output = await detector(img, {
-        threshold: 0.5,
-        percentage: true,
-    });
-    status.textContent = '';
-    output.forEach(renderBox);
-}
-
-// Render a bounding box and label on the image
-function renderBox({ box, label }) {
-    const { xmax, xmin, ymax, ymin } = box;
-
-    // Generate a random color for the box
-    const color = '#' + Math.floor(Math.random() * 0xFFFFFF).toString(16).padStart(6, 0);
-
-    // Draw the box
-    const boxElement = document.createElement('div');
-    boxElement.className = 'bounding-box';
-    Object.assign(boxElement.style, {
-        borderColor: color,
-        left: 100 * xmin + '%',
-        top: 100 * ymin + '%',
-        width: 100 * (xmax - xmin) + '%',
-        height: 100 * (ymax - ymin) + '%',
-    })
-
-    // Draw label
-    const labelElement = document.createElement('span');
-    labelElement.textContent = label;
-    labelElement.className = 'bounding-box-label';
-    labelElement.style.backgroundColor = color;
-
-    boxElement.appendChild(labelElement);
-    imageContainer.appendChild(boxElement);
-}
+        function renderResult({ label, score }) {
+            const resultElement = document.createElement('div');
+            resultElement.className = 'result-item';
+            resultElement.innerHTML = `
+                <span class="label">${label}:</span>
+                <span class="score">${(score * 100).toFixed(2)}%</span>
+            `;
+            resultsContainer.appendChild(resultElement);
+        }
+    </script>
+</body>
+</html>
