@@ -56,7 +56,7 @@
 
         status.textContent = 'Loading model...';
         //const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
-        const classifier = await pipeline('image-classification', 'Falconsai/nsfw_image_detection');
+        const classifier = await pipeline('image-classification', 'google/vit-base-patch32-384');
         
         status.textContent = 'Ready';
 
