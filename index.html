@@ -55,7 +55,9 @@
         const EXAMPLE_URL = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/city-streets.jpg';
 
         status.textContent = 'Loading model...';
-        const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
+        //const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
+        const classifier = await pipeline('image-classification', 'Falconsai/nsfw_image_detection');
+        
         status.textContent = 'Ready';
 
         example.addEventListener('click', (e) => {
