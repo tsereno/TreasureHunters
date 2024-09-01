@@ -55,8 +55,7 @@
         const EXAMPLE_URL = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/city-streets.jpg';
 
         status.textContent = 'Loading model...';
-        //const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
-        const classifier = await pipeline('image-classification', 'google/vit-base-patch32-384');
+        const classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
         
         status.textContent = 'Ready';
 
