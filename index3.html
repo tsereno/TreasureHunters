@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gemma 2B Model Demo</title>
-    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.0"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -30,8 +29,8 @@
     <button id="generate">Generate</button>
     <div id="output"></div>
 
-    <script>
-        const { pipeline, env } = window.transformers;
+    <script type="module">
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.14.0/+esm';
 
         // Set the environment to use WASM backend
         env.backends.onnx.wasm.numThreads = 1;
