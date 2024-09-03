@@ -9,8 +9,8 @@
     <h1>Google Generative AI Example</h1>
     
     <!-- Load the Google Generative AI library from CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/@google/generative-ai@0.1.3/dist/index.min.js"></script>
-
+    <script type="module">
+        import { pipeline, env } from "https://cdn.jsdelivr.net/npm/@google/generative-ai@0.1.3/dist/index.min.js";
     <script>
          const genAI = new GoogleGenerativeAI('AIzaSyB3lEhfhLyO35g1iHJrzESYRFugs7mZPhc');
          const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest"});
