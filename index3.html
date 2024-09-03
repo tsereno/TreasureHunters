@@ -36,7 +36,7 @@
         env.backends.onnx.wasm.numThreads = 1;
 
         async function loadModel() {
-            const generator = await pipeline('text-generation', 'Xenova/TinyLlama-1.1B-Chat-v1.0');
+            const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
             return generator;
         }
 
