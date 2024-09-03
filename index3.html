@@ -36,7 +36,7 @@
         env.backends.onnx.wasm.numThreads = 1;
 
         async function loadModel() {
-            const generator = await pipeline('text-generation', 'microsoft/Phi-3-mini-4k-instruct-onnx-web');
+            const generator = await pipeline('text-generation', 'google/gemma-2b-it-tflite');
             return generator;
         }
 
