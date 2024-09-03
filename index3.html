@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gemma 2B Model Demo</title>
+    <title>AI Adventure Chatbot with Image Classification</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,77 +11,206 @@
             margin: 0 auto;
             padding: 20px;
         }
-        textarea {
-            width: 100%;
-            height: 100px;
-        }
-        #output {
-            white-space: pre-wrap;
+        #chat-container {
+            height: 300px;
+            overflow-y: auto;
             border: 1px solid #ccc;
             padding: 10px;
-            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+        #user-input {
+            width: calc(100% - 70px);
+            padding: 5px;
+        }
+        #send-button {
+            width: 60px;
+            padding: 5px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .user-message {
+            text-align: right;
+            color: blue;
+        }
+        .ai-message {
+            text-align: left;
+            color: green;
+        }
+        #container {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            margin-top: 20px;
+        }
+        #results {
+            margin-top: 20px;
+        }
+        .result-item {
+            margin-bottom: 10px;
+        }
+        .label {
+            font-weight: bold;
+        }
+        .score {
+            color: #666;
+        }
+        #webcam {
+            width: 100%;
+            max-width: 640px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Gemma 2B Model Demo</h1>
-    <textarea id="input" placeholder="Enter your prompt here..."></textarea>
-    <button id="generate">Generate</button>
-    <div id="output"></div>
+    <h1>AI Adventure Chatbot with Image Classification</h1>
+    <div id="chat-container"></div>
+    <input type="text" id="user-input" placeholder="Type your message...">
+    <button id="send-button">Send</button>
+
+    <h2>Image Classification</h2>
+    <p id="status">Loading model...</p>
+    <button id="startWebcam">Start Webcam</button>
+    <button id="captureImage">Capture Image</button>
+    <button id="example">Run example</button>
+    <video id="webcam" autoplay playsinline></video>
+    <div id="container"></div>
+    <div id="results"></div>
 
     <script type="module">
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers';
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai"
+        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.1';
 
-        // Set the environment to use WASM backend
-        env.backends.onnx.wasm.numThreads = 1;
+        // Chatbot setup
+        const genAI = new GoogleGenerativeAI('YOUR_API_KEY');
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest"});
 
-        async function loadModel() {
-            const generator = await pipeline('text-generation', 'Xenova/distilgpt2');
-            return generator;
-        }
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
 
-        async function generateText(generator, prompt) {
-            const result = await generator(prompt, {
-                max_new_tokens: 100,
-                temperature: 0.7,
-            });
-            return result[0].generated_text;
-        }
+        let chatHistory = [];
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            const inputElement = document.getElementById('input');
-            const generateButton = document.getElementById('generate');
-            const outputElement = document.getElementById('output');
-
-            generateButton.textContent = 'Loading model...';
-            generateButton.disabled = true;
-
+        async function generateContent(prompt) {
             try {
-                const generator = await loadModel();
-                generateButton.textContent = 'Generate';
-                generateButton.disabled = false;
-
-                generateButton.addEventListener('click', async () => {
-                    const prompt = inputElement.value;
-                    if (prompt.trim() === '') return;
-
-                    generateButton.disabled = true;
-                    outputElement.textContent = 'Generating...';
-
-                    try {
-                        const generatedText = await generateText(generator, prompt);
-                        outputElement.textContent = generatedText;
-                    } catch (error) {
-                        outputElement.textContent = `Error: ${error.message}`;
-                    } finally {
-                        generateButton.disabled = false;
-                    }
-                });
+                const result = await model.generateContent(prompt);
+                return result.response.text();
             } catch (error) {
-                generateButton.textContent = 'Failed to load model';
-                outputElement.textContent = `Error loading model: ${error.message}`;
+                console.error("Error generating content:", error);
+                return "Sorry, I encountered an error. Please try again.";
+            }
+        }
+
+        function addMessageToChat(message, isUser) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
+            messageElement.textContent = message;
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function handleUserInput() {
+            const userMessage = userInput.value.trim();
+            if (userMessage) {
+                addMessageToChat(userMessage, true);
+                userInput.value = '';
+
+                chatHistory.push({ role: "user", parts: userMessage });
+                const fullPrompt = chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n') + "\nai:";
+
+                const aiResponse = await generateContent(fullPrompt);
+                addMessageToChat(aiResponse, false);
+                chatHistory.push({ role: "ai", parts: aiResponse });
+            }
+        }
+
+        sendButton.addEventListener('click', handleUserInput);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUserInput();
             }
         });
+
+        // Initial message
+        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
+            addMessageToChat(response, false);
+            chatHistory.push({ role: "ai", parts: response });
+        });
+
+        // Image Classification setup
+        env.allowLocalModels = false;
+
+        const status = document.getElementById('status');
+        const startWebcamButton = document.getElementById('startWebcam');
+        const captureImageButton = document.getElementById('captureImage');
+        const webcamElement = document.getElementById('webcam');
+        const imageContainer = document.getElementById('container');
+        const example = document.getElementById('example');
+        const resultsContainer = document.getElementById('results');
+
+        const EXAMPLE_URL = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/city-streets.jpg';
+
+        let stream;
+        let classifier;
+
+        status.textContent = 'Loading model...';
+        classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
+        
+        status.textContent = 'Ready';
+
+        startWebcamButton.addEventListener('click', startWebcam);
+        captureImageButton.addEventListener('click', captureImage);
+
+        example.addEventListener('click', (e) => {
+            e.preventDefault();
+            classify(EXAMPLE_URL);
+        });
+
+        async function startWebcam() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                webcamElement.srcObject = stream;
+                startWebcamButton.disabled = true;
+                captureImageButton.disabled = false;
+            } catch (err) {
+                console.error("Error accessing the webcam:", err);
+                status.textContent = 'Error accessing the webcam';
+            }
+        }
+
+        function captureImage() {
+            const canvas = document.createElement('canvas');
+            canvas.width = webcamElement.videoWidth;
+            canvas.height = webcamElement.videoHeight;
+            canvas.getContext('2d').drawImage(webcamElement, 0, 0);
+            const imageDataUrl = canvas.toDataURL('image/jpeg');
+            classify(imageDataUrl);
+        }
+
+        async function classify(img) {
+            imageContainer.innerHTML = '';
+            imageContainer.style.backgroundImage = `url(${img})`;
+            resultsContainer.innerHTML = '';
+
+            status.textContent = 'Classifying...';
+            const output = await classifier(img, { topk: 5 });
+            status.textContent = '';
+            
+            output.forEach(renderResult);
+        }
+
+        function renderResult({ label, score }) {
+            const resultElement = document.createElement('div');
+            resultElement.className = 'result-item';
+            resultElement.innerHTML = `
+                <span class="label">${label}:</span>
+                <span class="score">${(score * 100).toFixed(2)}%</span>
+            `;
+            resultsContainer.appendChild(resultElement);
+        }
     </script>
 </body>
 </html>
