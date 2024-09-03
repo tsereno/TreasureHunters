@@ -10,7 +10,7 @@
     
     <!-- Load the Google Generative AI library from CDN -->
     <script type="module">
-        import { GoogleGenerativeAI } from "https://cdn.jsdelivr.net/npm/@google/generative-ai@1.1.0/dist/index.min.js";
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai"
         const genAI = new GoogleGenerativeAI('AIzaSyB3lEhfhLyO35g1iHJrzESYRFugs7mZPhc');
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest"});
 
