@@ -3,23 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Google Generative AI Example</title>
+    <title>AI Adventure Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #user-input {
+            width: calc(100% - 70px);
+            padding: 5px;
+        }
+        #send-button {
+            width: 60px;
+            padding: 5px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .user-message {
+            text-align: right;
+            color: blue;
+        }
+        .ai-message {
+            text-align: left;
+            color: green;
+        }
+    </style>
 </head>
 <body>
-    <h1>Google Generative AI Example</h1>
-    
-    <!-- Load the Google Generative AI library from CDN -->
+    <h1>AI Adventure Chatbot</h1>
+    <div id="chat-container"></div>
+    <input type="text" id="user-input" placeholder="Type your message...">
+    <button id="send-button">Send</button>
+
     <script type="module">
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai"
+        
+        // Replace 'YOUR_API_KEY' with your actual API key
         const genAI = new GoogleGenerativeAI('AIzaSyB3lEhfhLyO35g1iHJrzESYRFugs7mZPhc');
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest"});
 
-        async function generateContent() {
-             const result = await model.generateContent("Imagine you are a choose your own adventure story.");
-             console.log(result.response.text());
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+
+        let chatHistory = [];
+
+        async function generateContent(prompt) {
+            try {
+                const result = await model.generateContent(prompt);
+                return result.response.text();
+            } catch (error) {
+                console.error("Error generating content:", error);
+                return "Sorry, I encountered an error. Please try again.";
+            }
         }
-         
-        generateContent();
+
+        function addMessageToChat(message, isUser) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
+            messageElement.textContent = message;
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function handleUserInput() {
+            const userMessage = userInput.value.trim();
+            if (userMessage) {
+                addMessageToChat(userMessage, true);
+                userInput.value = '';
+
+                chatHistory.push({ role: "user", parts: userMessage });
+                const fullPrompt = chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n') + "\nai:";
+
+                const aiResponse = await generateContent(fullPrompt);
+                addMessageToChat(aiResponse, false);
+                chatHistory.push({ role: "ai", parts: aiResponse });
+            }
+        }
+
+        sendButton.addEventListener('click', handleUserInput);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUserInput();
+            }
+        });
+
+        // Initial message
+        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
+            addMessageToChat(response, false);
+            chatHistory.push({ role: "ai", parts: response });
+        });
     </script>
 </body>
 </html>
