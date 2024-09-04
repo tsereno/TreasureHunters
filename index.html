@@ -148,7 +148,7 @@
         });
 
         // Initial message
-        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
+        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice. If images are provided, describe the environment and available items that user can either interact with or collect into backpack to use later.").then(response => {
             addMessageToChat(response, false);
             chatHistory.push({ role: "ai", parts: response });
         });
