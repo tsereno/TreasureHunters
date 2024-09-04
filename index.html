@@ -139,7 +139,7 @@
         });
 
         // Initial message
-        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
+        generateContent("Your are an expert at analyzing an image.").then(response => {
             addMessageToChat(response, false);
             chatHistory.push({ role: "ai", content: response });
         });
@@ -178,34 +178,19 @@
             
             addMessageToChat("Image captured. Analyzing...", false);
 
-            const imagePrompt = `You are now an evolving story. Your task is to create an immersive, interactive story experience for the player. Follow these guidelines:
-                    
-                    Story and Choices:
-                    Begin the story immediately, describing the initial scene and situation.
-                    Adapt the story based on the player's choices, creating branching narratives.
-                    Inventory Management:
-                    The player has a backpack to store items.
-                    Keep track of items added to or removed from the backpack.
-                    Allow the player to check their inventory at any time by typing "inventory".
-                    Items in the inventory can be used in the story when appropriate.
-                    Image Interaction:
-                    When the player uploads an image, immediately incorporate elements from that image into the story.
-                    Describe objects, people, or scenes from the image as part of the game world.
-                    Create puzzles, challenges, or story elements based on the image contents.
-                    Commands:
-                    Recognize and respond to these commands:
-                    "inventory": List all items in the player's backpack.
-                    "use [item]": Attempt to use a specific item from the inventory.
-                    "examine [object]": Provide a detailed description of an object in the current scene.
-                    "help": List available commands and game instructions.
-                    Game State:
-                    Keep track of the player's progress, including key decisions and acquired items.
-                    Use this information to influence future story developments and available choices.
-                    Engagement:
-                    Use vivid descriptions to create an immersive atmosphere.
-                    Incorporate puzzles, challenges, and unexpected twists to keep the player engaged.
-                    Adjust the story's tone and complexity based on the player's choices and interactions.
-                    Begin the game by welcoming the player and describing the initial scene. If an image is uploaded, immediately integrate its contents into the opening scenario. Wait for the player's command before continuing the story.
+            const imagePrompt = `
+
+            Analyze the provided image and extract the following information:
+
+            Collectible items:
+            List all visible objects that appear to be collectible or gatherable by the player.
+            Describe their appearance, location in the scene, and any notable characteristics.
+            Interactive elements:
+            Identify objects, structures, or areas that seem to be interactive or manipulable.
+            Describe how they might be interacted with.
+            Detailed scene description:
+            Provide a comprehensive description of the game environment shown in the image.
+            Based on the visual information, suggest possible gameplay mechanics or actions the player might be able to perform in this scene.
 
             Previous conversation:
             ${chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
