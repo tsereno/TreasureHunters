@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Adventure Chatbot with Image Interaction</title>
+    <title>AI Adventure Chatbot with Immediate Image Interaction</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,7 +58,7 @@
     </style>
 </head>
 <body>
-    <h1>AI Adventure Chatbot with Image Interaction</h1>
+    <h1>AI Adventure Chatbot with Immediate Image Interaction</h1>
     <div id="chat-container"></div>
     <input type="text" id="user-input" placeholder="Type your message...">
     <button id="send-button">Send</button>
@@ -79,7 +79,7 @@
 
         // Chatbot setup
         const genAI = new GoogleGenerativeAI('AIzaSyB3lEhfhLyO35g1iHJrzESYRFugs7mZPhc');
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro"});
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest"});
 
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
@@ -136,19 +136,12 @@
                     
                     AI:`;
 
-                if (capturedImageBase64) {
-                    prompt = `Analyze the following image and incorporate it into our ongoing choose-your-own-adventure story. Describe the environment shown in the image, suggest objects or items the user could interact with or collect, and provide choices for the user's next action. Remember to keep the story context in mind.
-
-                    ${prompt}`;
-                }
-
-                const aiResponse = await generateContent(prompt, capturedImageBase64);
+                const aiResponse = await generateContent(prompt);
                 addMessageToChat(aiResponse, false);
                 chatHistory.push({ role: "user", parts: userMessage });
                 chatHistory.push({ role: "ai", parts: aiResponse });
                 
                 updateBackpack(aiResponse);
-                capturedImageBase64 = null;
             }
         }
 
@@ -172,11 +165,17 @@
 
         function updateBackpackDisplay() {
             backpackItems.innerHTML = '';
-            backpack.forEach(item => {
+            if (backpack.length === 0) {
                 const li = document.createElement('li');
-                li.textContent = item;
+                li.textContent = 'Your backpack is empty';
                 backpackItems.appendChild(li);
-            });
+            } else {
+                backpack.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    backpackItems.appendChild(li);
+                });
+            }
         }
 
         sendButton.addEventListener('click', handleUserInput);
@@ -186,10 +185,11 @@
             }
         });
 
-        // Initial message
-        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
+        // Initial message and backpack display
+        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice. Also, provide the user with a starting item for their backpack.").then(response => {
             addMessageToChat(response, false);
             chatHistory.push({ role: "ai", parts: response });
+            updateBackpack(response);
         });
 
         // Image Capture setup
@@ -215,7 +215,7 @@
             }
         }
 
-        function captureImage() {
+        async function captureImage() {
             const canvas = document.createElement('canvas');
             canvas.width = webcamElement.videoWidth;
             canvas.height = webcamElement.videoHeight;
@@ -223,7 +223,22 @@
             const imageDataUrl = canvas.toDataURL('image/jpeg');
             imageContainer.style.backgroundImage = `url(${imageDataUrl})`;
             capturedImageBase64 = imageDataUrl.split(',')[1];
-            addMessageToChat("Image captured. The AI will analyze it in your next interaction.", false);
+            
+            addMessageToChat("Image captured. Analyzing...", false);
+
+            const imagePrompt = `Analyze the following image and incorporate it into our ongoing choose-your-own-adventure story. Describe the environment shown in the image, suggest objects or items the user could interact with or collect, and provide choices for the user's next action. Remember to keep the story context in mind.
+
+            Previous conversation:
+            ${chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n')}
+
+            AI:`;
+
+            const aiResponse = await generateContent(imagePrompt, capturedImageBase64);
+            addMessageToChat(aiResponse, false);
+            chatHistory.push({ role: "ai", parts: aiResponse });
+            updateBackpack(aiResponse);
+
+            capturedImageBase64 = null;
         }
     </script>
 </body>
