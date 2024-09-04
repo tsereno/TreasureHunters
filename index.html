@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Adventure Chatbot with Image Classification</title>
+    <title>AI Adventure Chatbot with Image Interaction</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -45,54 +45,50 @@
             background-position: center;
             margin-top: 20px;
         }
-        #results {
-            margin-top: 20px;
-        }
-        .result-item {
-            margin-bottom: 10px;
-        }
-        .label {
-            font-weight: bold;
-        }
-        .score {
-            color: #666;
-        }
         #webcam {
             width: 100%;
             max-width: 640px;
             margin-top: 20px;
         }
+        #backpack {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
     </style>
 </head>
 <body>
-    <h1>AI Adventure Chatbot with Image Classification</h1>
+    <h1>AI Adventure Chatbot with Image Interaction</h1>
     <div id="chat-container"></div>
     <input type="text" id="user-input" placeholder="Type your message...">
     <button id="send-button">Send</button>
 
-    <h2>Image Classification</h2>
-    <p id="status">Loading model...</p>
+    <h2>Image Capture</h2>
     <button id="startWebcam">Start Webcam</button>
     <button id="captureImage">Capture Image</button>
-    <button id="example">Run example</button>
     <video id="webcam" autoplay playsinline></video>
     <div id="container"></div>
-    <div id="results"></div>
+
+    <div id="backpack">
+        <h3>Backpack</h3>
+        <ul id="backpack-items"></ul>
+    </div>
 
     <script type="module">
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai"
-        import { pipeline, env } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.10.1';
 
         // Chatbot setup
         const genAI = new GoogleGenerativeAI('AIzaSyB3lEhfhLyO35g1iHJrzESYRFugs7mZPhc');
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest"});
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro"});
 
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
+        const backpackItems = document.getElementById('backpack-items');
 
         let chatHistory = [];
         let capturedImageBase64 = null;
+        let backpack = [];
 
         async function generateContent(prompt, imageBase64) {
             try {
@@ -128,16 +124,59 @@
                 addMessageToChat(userMessage, true);
                 userInput.value = '';
 
-                chatHistory.push({ role: "user", parts: userMessage });
-                const fullPrompt = chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n') + "\nai:";
+                let prompt = `
+                    You are an AI running a choose-your-own-adventure story. The user's backpack contains: ${backpack.join(', ')}.
+                    
+                    Previous conversation:
+                    ${chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n')}
+                    
+                    User: ${userMessage}
+                    
+                    Respond to the user's input, continuing the story. If they want to use an item from their backpack, incorporate it into the story. If they want to add an item to their backpack, update the backpack contents.
+                    
+                    AI:`;
 
-                const aiResponse = await generateContent(fullPrompt, capturedImageBase64);
+                if (capturedImageBase64) {
+                    prompt = `Analyze the following image and incorporate it into our ongoing choose-your-own-adventure story. Describe the environment shown in the image, suggest objects or items the user could interact with or collect, and provide choices for the user's next action. Remember to keep the story context in mind.
+
+                    ${prompt}`;
+                }
+
+                const aiResponse = await generateContent(prompt, capturedImageBase64);
                 addMessageToChat(aiResponse, false);
+                chatHistory.push({ role: "user", parts: userMessage });
                 chatHistory.push({ role: "ai", parts: aiResponse });
                 
-                // Reset capturedImageBase64 after using it
+                updateBackpack(aiResponse);
                 capturedImageBase64 = null;
             }
+        }
+
+        function updateBackpack(aiResponse) {
+            const addMatch = aiResponse.match(/added to (?:your|the) backpack: (.*?)(?:\.|$)/i);
+            if (addMatch) {
+                const newItem = addMatch[1].trim();
+                if (!backpack.includes(newItem)) {
+                    backpack.push(newItem);
+                }
+            }
+
+            const removeMatch = aiResponse.match(/removed from (?:your|the) backpack: (.*?)(?:\.|$)/i);
+            if (removeMatch) {
+                const removedItem = removeMatch[1].trim();
+                backpack = backpack.filter(item => item !== removedItem);
+            }
+
+            updateBackpackDisplay();
+        }
+
+        function updateBackpackDisplay() {
+            backpackItems.innerHTML = '';
+            backpack.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                backpackItems.appendChild(li);
+            });
         }
 
         sendButton.addEventListener('click', handleUserInput);
@@ -148,39 +187,21 @@
         });
 
         // Initial message
-        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice. If images are provided, describe the environment and available items that user can either interact with or collect into backpack to use later.").then(response => {
+        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
             addMessageToChat(response, false);
             chatHistory.push({ role: "ai", parts: response });
         });
 
-        // Image Classification setup
-        env.allowLocalModels = false;
-
-        const status = document.getElementById('status');
+        // Image Capture setup
         const startWebcamButton = document.getElementById('startWebcam');
         const captureImageButton = document.getElementById('captureImage');
         const webcamElement = document.getElementById('webcam');
         const imageContainer = document.getElementById('container');
-        const example = document.getElementById('example');
-        const resultsContainer = document.getElementById('results');
-
-        const EXAMPLE_URL = 'https://huggingface.co/datasets/Xenova/transformers.js-docs/resolve/main/city-streets.jpg';
 
         let stream;
-        let classifier;
-
-        status.textContent = 'Loading model...';
-        classifier = await pipeline('image-classification', 'Xenova/vit-base-patch16-224');
-        
-        status.textContent = 'Ready';
 
         startWebcamButton.addEventListener('click', startWebcam);
         captureImageButton.addEventListener('click', captureImage);
-
-        example.addEventListener('click', (e) => {
-            e.preventDefault();
-            classify(EXAMPLE_URL);
-        });
 
         async function startWebcam() {
             try {
@@ -190,7 +211,7 @@
                 captureImageButton.disabled = false;
             } catch (err) {
                 console.error("Error accessing the webcam:", err);
-                status.textContent = 'Error accessing the webcam';
+                alert('Error accessing the webcam');
             }
         }
 
@@ -200,30 +221,9 @@
             canvas.height = webcamElement.videoHeight;
             canvas.getContext('2d').drawImage(webcamElement, 0, 0);
             const imageDataUrl = canvas.toDataURL('image/jpeg');
-            classify(imageDataUrl);
-            capturedImageBase64 = imageDataUrl.split(',')[1]; // Store the base64 string
-        }
-
-        async function classify(img) {
-            imageContainer.innerHTML = '';
-            imageContainer.style.backgroundImage = `url(${img})`;
-            resultsContainer.innerHTML = '';
-
-            status.textContent = 'Classifying...';
-            const output = await classifier(img, { topk: 5 });
-            status.textContent = '';
-            
-            output.forEach(renderResult);
-        }
-
-        function renderResult({ label, score }) {
-            const resultElement = document.createElement('div');
-            resultElement.className = 'result-item';
-            resultElement.innerHTML = `
-                <span class="label">${label}:</span>
-                <span class="score">${(score * 100).toFixed(2)}%</span>
-            `;
-            resultsContainer.appendChild(resultElement);
+            imageContainer.style.backgroundImage = `url(${imageDataUrl})`;
+            capturedImageBase64 = imageDataUrl.split(',')[1];
+            addMessageToChat("Image captured. The AI will analyze it in your next interaction.", false);
         }
     </script>
 </body>
