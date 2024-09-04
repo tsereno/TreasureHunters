@@ -50,11 +50,6 @@
             max-width: 640px;
             margin-top: 20px;
         }
-        #backpack {
-            margin-top: 20px;
-            border: 1px solid #ccc;
-            padding: 10px;
-        }
     </style>
 </head>
 <body>
@@ -69,26 +64,19 @@
     <video id="webcam" autoplay playsinline></video>
     <div id="container"></div>
 
-    <div id="backpack">
-        <h3>Backpack</h3>
-        <ul id="backpack-items"></ul>
-    </div>
-
     <script type="module">
         import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai"
 
         // Chatbot setup
         const genAI = new GoogleGenerativeAI('AIzaSyB3lEhfhLyO35g1iHJrzESYRFugs7mZPhc');
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro-latest"});
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest"});
 
         const chatContainer = document.getElementById('chat-container');
         const userInput = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
-        const backpackItems = document.getElementById('backpack-items');
 
         let chatHistory = [];
         let capturedImageBase64 = null;
-        let backpack = [];
 
         async function generateContent(prompt, imageBase64) {
             try {
@@ -125,14 +113,14 @@
                 userInput.value = '';
 
                 let prompt = `
-                    You are an AI running a choose-your-own-adventure story. The user's backpack contains: ${backpack.join(', ')}.
+                    You are an AI running a choose-your-own-adventure story.
                     
                     Previous conversation:
                     ${chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
                     
                     User: ${userMessage}
                     
-                    Respond to the user's input, continuing the story. If they want to use an item from their backpack, incorporate it into the story. If they want to add an item to their backpack, update the backpack contents.
+                    Respond to the user's input, continuing the story.
                     
                     AI:`;
 
@@ -140,45 +128,6 @@
                 addMessageToChat(aiResponse, false);
                 chatHistory.push({ role: "user", content: userMessage });
                 chatHistory.push({ role: "ai", content: aiResponse });
-                
-                updateBackpack(aiResponse);
-            }
-        }
-
-        function updateBackpack(aiResponse) {
-            const addMatches = aiResponse.match(/added to (?:your|the) backpack:?\s*(.*?)(?:\.|\n|$)/gi);
-            if (addMatches) {
-                addMatches.forEach(match => {
-                    const newItem = match.replace(/added to (?:your|the) backpack:?\s*/i, '').trim();
-                    if (newItem && !backpack.includes(newItem)) {
-                        backpack.push(newItem);
-                    }
-                });
-            }
-
-            const removeMatches = aiResponse.match(/removed from (?:your|the) backpack:?\s*(.*?)(?:\.|\n|$)/gi);
-            if (removeMatches) {
-                removeMatches.forEach(match => {
-                    const removedItem = match.replace(/removed from (?:your|the) backpack:?\s*/i, '').trim();
-                    backpack = backpack.filter(item => item.toLowerCase() !== removedItem.toLowerCase());
-                });
-            }
-
-            updateBackpackDisplay();
-        }
-
-        function updateBackpackDisplay() {
-            backpackItems.innerHTML = '';
-            if (backpack.length === 0) {
-                const li = document.createElement('li');
-                li.textContent = 'Your backpack is empty';
-                backpackItems.appendChild(li);
-            } else {
-                backpack.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item;
-                    backpackItems.appendChild(li);
-                });
             }
         }
 
@@ -189,11 +138,10 @@
             }
         });
 
-        // Initial message and backpack display
-        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice. Also, provide the user with a starting item for their backpack.").then(response => {
+        // Initial message
+        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
             addMessageToChat(response, false);
             chatHistory.push({ role: "ai", content: response });
-            updateBackpack(response);
         });
 
         // Image Capture setup
@@ -230,7 +178,7 @@
             
             addMessageToChat("Image captured. Analyzing...", false);
 
-            const imagePrompt = `Analyze the following image and incorporate it into our ongoing choose-your-own-adventure story. Describe the environment shown in the image, suggest objects or items the user could interact with or collect, and provide choices for the user's next action. Remember to keep the story context in mind.
+            const imagePrompt = `Analyze the following image and incorporate it into our ongoing choose-your-own-adventure story. Describe the environment shown in the image, suggest objects or items the user could interact with, and provide choices for the user's next action. Remember to keep the story context in mind.
 
             Previous conversation:
             ${chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
@@ -240,13 +188,9 @@
             const aiResponse = await generateContent(imagePrompt, capturedImageBase64);
             addMessageToChat(aiResponse, false);
             chatHistory.push({ role: "ai", content: aiResponse });
-            updateBackpack(aiResponse);
 
             capturedImageBase64 = null;
         }
-
-        // Initialize backpack display
-        updateBackpackDisplay();
     </script>
 </body>
 </html>
