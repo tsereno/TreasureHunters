@@ -92,10 +92,20 @@
         const sendButton = document.getElementById('send-button');
 
         let chatHistory = [];
+        let capturedImageBase64 = null;
 
-        async function generateContent(prompt) {
+        async function generateContent(prompt, imageBase64) {
             try {
-                const result = await model.generateContent(prompt);
+                let parts = [prompt];
+                if (imageBase64) {
+                    parts.unshift({
+                        inlineData: {
+                            mimeType: "image/jpeg",
+                            data: imageBase64
+                        }
+                    });
+                }
+                const result = await model.generateContent(parts);
                 return result.response.text();
             } catch (error) {
                 console.error("Error generating content:", error);
@@ -121,9 +131,12 @@
                 chatHistory.push({ role: "user", parts: userMessage });
                 const fullPrompt = chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n') + "\nai:";
 
-                const aiResponse = await generateContent(fullPrompt);
+                const aiResponse = await generateContent(fullPrompt, capturedImageBase64);
                 addMessageToChat(aiResponse, false);
                 chatHistory.push({ role: "ai", parts: aiResponse });
+                
+                // Reset capturedImageBase64 after using it
+                capturedImageBase64 = null;
             }
         }
 
@@ -188,6 +201,7 @@
             canvas.getContext('2d').drawImage(webcamElement, 0, 0);
             const imageDataUrl = canvas.toDataURL('image/jpeg');
             classify(imageDataUrl);
+            capturedImageBase64 = imageDataUrl.split(',')[1]; // Store the base64 string
         }
 
         async function classify(img) {
