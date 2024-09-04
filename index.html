@@ -178,12 +178,10 @@
             
             addMessageToChat("Image captured. Analyzing...", false);
 
-            const imagePrompt = `You are now a complete choose-your-own-adventure game system. Your task is to create an immersive, interactive story experience for the player. Follow these guidelines:
+            const imagePrompt = `You are now an evolving story. Your task is to create an immersive, interactive story experience for the player. Follow these guidelines:
                     
                     Story and Choices:
                     Begin the story immediately, describing the initial scene and situation.
-                    After each story segment, provide 2-3 numbered choices for the player.
-                    Wait for the player to input their choice before continuing.
                     Adapt the story based on the player's choices, creating branching narratives.
                     Inventory Management:
                     The player has a backpack to store items.
@@ -207,7 +205,7 @@
                     Use vivid descriptions to create an immersive atmosphere.
                     Incorporate puzzles, challenges, and unexpected twists to keep the player engaged.
                     Adjust the story's tone and complexity based on the player's choices and interactions.
-                    Begin the game by welcoming the player and describing the initial scene. If an image is uploaded, immediately integrate its contents into the opening scenario. Wait for the player's first choice or command before continuing the story.
+                    Begin the game by welcoming the player and describing the initial scene. If an image is uploaded, immediately integrate its contents into the opening scenario. Wait for the player's command before continuing the story.
 
             Previous conversation:
             ${chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
