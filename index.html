@@ -128,7 +128,7 @@
                     You are an AI running a choose-your-own-adventure story. The user's backpack contains: ${backpack.join(', ')}.
                     
                     Previous conversation:
-                    ${chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n')}
+                    ${chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
                     
                     User: ${userMessage}
                     
@@ -138,26 +138,30 @@
 
                 const aiResponse = await generateContent(prompt);
                 addMessageToChat(aiResponse, false);
-                chatHistory.push({ role: "user", parts: userMessage });
-                chatHistory.push({ role: "ai", parts: aiResponse });
+                chatHistory.push({ role: "user", content: userMessage });
+                chatHistory.push({ role: "ai", content: aiResponse });
                 
                 updateBackpack(aiResponse);
             }
         }
 
         function updateBackpack(aiResponse) {
-            const addMatch = aiResponse.match(/added to (?:your|the) backpack: (.*?)(?:\.|$)/i);
-            if (addMatch) {
-                const newItem = addMatch[1].trim();
-                if (!backpack.includes(newItem)) {
-                    backpack.push(newItem);
-                }
+            const addMatches = aiResponse.match(/added to (?:your|the) backpack:?\s*(.*?)(?:\.|\n|$)/gi);
+            if (addMatches) {
+                addMatches.forEach(match => {
+                    const newItem = match.replace(/added to (?:your|the) backpack:?\s*/i, '').trim();
+                    if (newItem && !backpack.includes(newItem)) {
+                        backpack.push(newItem);
+                    }
+                });
             }
 
-            const removeMatch = aiResponse.match(/removed from (?:your|the) backpack: (.*?)(?:\.|$)/i);
-            if (removeMatch) {
-                const removedItem = removeMatch[1].trim();
-                backpack = backpack.filter(item => item !== removedItem);
+            const removeMatches = aiResponse.match(/removed from (?:your|the) backpack:?\s*(.*?)(?:\.|\n|$)/gi);
+            if (removeMatches) {
+                removeMatches.forEach(match => {
+                    const removedItem = match.replace(/removed from (?:your|the) backpack:?\s*/i, '').trim();
+                    backpack = backpack.filter(item => item.toLowerCase() !== removedItem.toLowerCase());
+                });
             }
 
             updateBackpackDisplay();
@@ -188,7 +192,7 @@
         // Initial message and backpack display
         generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice. Also, provide the user with a starting item for their backpack.").then(response => {
             addMessageToChat(response, false);
-            chatHistory.push({ role: "ai", parts: response });
+            chatHistory.push({ role: "ai", content: response });
             updateBackpack(response);
         });
 
@@ -229,17 +233,20 @@
             const imagePrompt = `Analyze the following image and incorporate it into our ongoing choose-your-own-adventure story. Describe the environment shown in the image, suggest objects or items the user could interact with or collect, and provide choices for the user's next action. Remember to keep the story context in mind.
 
             Previous conversation:
-            ${chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n')}
+            ${chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
 
             AI:`;
 
             const aiResponse = await generateContent(imagePrompt, capturedImageBase64);
             addMessageToChat(aiResponse, false);
-            chatHistory.push({ role: "ai", parts: aiResponse });
+            chatHistory.push({ role: "ai", content: aiResponse });
             updateBackpack(aiResponse);
 
             capturedImageBase64 = null;
         }
+
+        // Initialize backpack display
+        updateBackpackDisplay();
     </script>
 </body>
 </html>
