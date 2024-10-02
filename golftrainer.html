@@ -197,17 +197,7 @@ Rule: IF golfer's accuracy is below average AND goal is to improve accuracy THEN
 
             Prompt:
 
-Create an AI trainer for a driving range that utilizes symbolic logic to set and track personalized goals and tasks for golfers of all skill levels. The trainer should be able to:
-
-Assess skill level: Determine the golfer's current abilities through observation and interaction.
-Set personalized goals: Create tailored objectives based on the golfer's skill level and preferences, such as improving accuracy, distance, or specific shots.
-Track progress: Monitor the golfer's performance and provide real-time feedback on their progress toward goals.
-Offer guidance: Suggest drills, exercises, or tips to help the golfer achieve their objectives.
-Provide motivation: Use positive reinforcement and encouragement to keep the golfer engaged and motivated.
-Utilize symbolic logic: Implement a symbolic logic framework to represent and reason about the golfer's skills, goals, and progress. This can include using rules, facts, and inferences to make decisions and provide recommendations.
-Example of a symbolic logic rule:
-
-Rule: IF golfer's accuracy is below average AND goal is to improve accuracy THEN suggest accuracy drills.
+            Process images of golfer to offer recommendations for improving golf setup position, ball position and club position.
 
             Previous conversation:
             ${chatHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n')}
