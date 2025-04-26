@@ -1,20 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>WebLLM Demo</title>
+    <meta charset="UTF-8">
+    <title>WebLLM CDN Example</title>
 </head>
 <body>
-  <script type="module">
-    import { ChatModule } from "https://mpsych.github.io/cdn/web-llm/web-llm-cdn.js";
+    <h1>WebLLM Chat Example</h1>
+    <label id="init-label">Initializing...</label>
+    <div id="chat-output" style="white-space: pre-wrap;"></div>
 
-    async function run() {
-      const model = new ChatModule();
-      await model.reload("Phi-3-mini-4k-instruct-q4f16_1");
-      const response = await model.generate("Hello");
-      document.body.innerHTML = response;
-    }
+    <script type="module">
+        // Import necessary functions from the official package via esm.run CDN
+        import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
 
-    run();
-  </script>
+        // Select the model to use (adjust based on RAM/device capabilities)
+        // Small models like TinyLlama or Phi work better on low-RAM devices
+        const SELECTED_MODEL = "Phi-3-mini-4k-instruct-q4f16_1"; // Example model
+        // const SELECTED_MODEL = "TinyLlama-1.1B-Chat-v0.4-q4f16_1-1k"; // Another small option
+
+        const chatOutput = document.getElementById('chat-output');
+        const initLabel = document.getElementById('init-label');
+
+        // Optional: Callback to display model loading progress
+        const initProgressCallback = (report) => {
+            initLabel.innerText = report.text;
+            console.log(report.text);
+        };
+
+        async function main() {
+            try {
+                // Create the MLCEngine, passing the model ID and progress callback
+                const engine = await CreateMLCEngine(
+                    SELECTED_MODEL,
+                    { initProgressCallback: initProgressCallback } // Configuration object
+                );
+
+                initLabel.innerText = "Model loaded. Ready to chat.";
+                chatOutput.innerText += "Engine loaded.\n";
+
+                // Example chat completion request
+                const messages = [
+                    { role: "system", content: "You are a helpful assistant." },
+                    { role: "user", content: "What is the capital of France?" }
+                ];
+
+                chatOutput.innerText += `User: ${messages[1].content}\n`;
+
+                // Use the engine's chat completions API
+                const reply = await engine.chat.completions.create({
+                    messages: messages,
+                    // stream: false, // Set to true for streaming responses
+                });
+
+                const assistantResponse = reply.choices[0].message.content;
+                chatOutput.innerText += `Assistant: ${assistantResponse}\n`;
+
+                // Optional: Log runtime stats
+                console.log(await engine.runtimeStatsText());
+
+                // Clean up the engine when done (optional, frees up resources)
+                // await engine.unload();
+
+            } catch (error) {
+                initLabel.innerText = `Error: ${error.message}`;
+                console.error("WebLLM Error:", error);
+            }
+        }
+
+        // Run the main function
+        main();
+    </script>
 </body>
 </html>
