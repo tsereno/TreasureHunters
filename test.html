@@ -28,7 +28,8 @@
     async function setup() {
       outputDiv.textContent = "Loading model (this may take a while the first time)...";
       // Change the model ID if you have a different Gemini Nano variant
-      generator = await pipeline('text-generation', 'Xenova/gemini-nano');
+      // Replace 'Xenova/gemini-nano' with a known model like distilgpt2
+      generator = await pipeline('text-generation', 'Xenova/distilgpt2');
       outputDiv.textContent = "Model loaded! Enter a prompt and click Generate.";
     }
 
