@@ -1,124 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Gemini Nano Browser Demo</title>
-    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0"></script>
-    <style>
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-        }
-        #chat-container {
-            border: 1px solid #ccc;
-            padding: 20px;
-            min-height: 400px;
-            margin-bottom: 20px;
-            overflow-y: auto;
-        }
-        .message {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .user-message {
-            background-color: #e3f2fd;
-            margin-left: 20%;
-        }
-        .bot-message {
-            background-color: #f5f5f5;
-            margin-right: 20%;
-        }
-        #input-container {
-            display: flex;
-            gap: 10px;
-        }
-        #prompt-input {
-            flex: 1;
-            padding: 10px;
-            font-size: 16px;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #1a73e8;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Gemini Nano with Transformers.js (CDN Example)</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    #output { margin-top: 1em; padding: 1em; background: #f5f5f5; border-radius: 6px; }
+    label, button { font-size: 1.1em; }
+    input[type="text"] { width: 60%; padding: 0.5em; font-size: 1em; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Gemini Nano Chat</h1>
-        <div id="chat-container"></div>
-        <div id="input-container">
-            <input type="text" id="prompt-input" placeholder="Type your message...">
-            <button onclick="generateResponse()">Send</button>
-        </div>
-    </div>
+  <h1>Gemini Nano Text Generation Demo</h1>
+  <label for="prompt">Enter your prompt:</label>
+  <input type="text" id="prompt" value="Tell me a fun fact about space." />
+  <button id="generate">Generate</button>
+  <div id="output"></div>
 
-    <script>
-        let generator;
-        let isLoading = false;
+  <script type="module">
+    import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@3.5.0';
 
-        // Initialize pipeline
-        async function initializeModel() {
-            try {
-                generator = await pipeline('text-generation', 'Xenova/gemini-nano');
-                addMessage("System: Model loaded and ready!", 'bot-message');
-            } catch (error) {
-                console.error('Error initializing model:', error);
-                addMessage("Error loading model. Please check console.", 'bot-message');
-            }
-        }
+    let generator;
+    const outputDiv = document.getElementById('output');
+    const button = document.getElementById('generate');
+    const promptInput = document.getElementById('prompt');
 
-        // Add messages to chat container
-        function addMessage(text, className) {
-            const chatDiv = document.getElementById('chat-container');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${className}`;
-            messageDiv.textContent = text;
-            chatDiv.appendChild(messageDiv);
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        }
+    async function setup() {
+      outputDiv.textContent = "Loading model (this may take a while the first time)...";
+      // Change the model ID if you have a different Gemini Nano variant
+      generator = await pipeline('text-generation', 'Xenova/gemini-nano');
+      outputDiv.textContent = "Model loaded! Enter a prompt and click Generate.";
+    }
 
-        // Generate response handler
-        async function generateResponse() {
-            if (isLoading || !generator) return;
-            
-            const input = document.getElementById('prompt-input');
-            const userMessage = input.value.trim();
-            if (!userMessage) return;
+    async function generateText() {
+      const prompt = promptInput.value.trim();
+      if (!prompt) return;
+      outputDiv.textContent = "Generating...";
+      try {
+        const result = await generator(prompt, { max_new_tokens: 128 });
+        outputDiv.textContent = result[0].generated_text;
+      } catch (err) {
+        outputDiv.textContent = "Error: " + err.message;
+      }
+    }
 
-            input.value = '';
-            isLoading = true;
-            addMessage(userMessage, 'user-message');
+    button.addEventListener('click', generateText);
 
-            try {
-                const messages = [
-                    { role: 'user', content: userMessage }
-                ];
-
-                // Generate response with parameters
-                const output = await generator(messages, { 
-                    temperature: 0.7,
-                    max_new_tokens: 500
-                });
-
-                addMessage(output[0].generated_text, 'bot-message');
-            } catch (error) {
-                console.error('Generation error:', error);
-                addMessage("Error generating response. Please try again.", 'bot-message');
-            } finally {
-                isLoading = false;
-            }
-        }
-
-        // Initialize on load
-        window.addEventListener('load', initializeModel);
-    </script>
+    setup();
+  </script>
 </body>
 </html>
