@@ -29,7 +29,7 @@
       outputDiv.textContent = "Loading model (this may take a while the first time)...";
       // Change the model ID if you have a different Gemini Nano variant
       // Replace 'Xenova/gemini-nano' with a known model like distilgpt2
-      generator = await pipeline('text-generation', 'Xenova/distilgpt2',{ dtype: "q8" }) // Explicitly set dtype);
+      generator = await pipeline('text-generation', 'HuggingFaceTB/SmolLM2-360M-Instruct')//,{ dtype: "q8" }) // Explicitly set dtype);
       outputDiv.textContent = "Model loaded! Enter a prompt and click Generate.";
     }
 
