@@ -13,10 +13,8 @@
         // Import necessary functions from the official package via esm.run CDN
         import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
 
-        // Select the model to use (adjust based on RAM/device capabilities)
-        // Small models like TinyLlama or Phi work better on low-RAM devices
-        const SELECTED_MODEL = "Phi-3-mini-4k-instruct-q4f16_1"; // Example model
-        // const SELECTED_MODEL = "TinyLlama-1.1B-Chat-v0.4-q4f16_1-1k"; // Another small option
+        // *** CORRECTED MODEL ID HERE ***
+        const SELECTED_MODEL = "Phi-3-mini-4k-instruct-q4f16_1-MLC"; // Added -MLC suffix
 
         const chatOutput = document.getElementById('chat-output');
         const initLabel = document.getElementById('init-label');
@@ -29,7 +27,7 @@
 
         async function main() {
             try {
-                // Create the MLCEngine, passing the model ID and progress callback
+                // Create the MLCEngine, passing the corrected model ID
                 const engine = await CreateMLCEngine(
                     SELECTED_MODEL,
                     { initProgressCallback: initProgressCallback } // Configuration object
@@ -49,20 +47,17 @@
                 // Use the engine's chat completions API
                 const reply = await engine.chat.completions.create({
                     messages: messages,
-                    // stream: false, // Set to true for streaming responses
                 });
 
                 const assistantResponse = reply.choices[0].message.content;
                 chatOutput.innerText += `Assistant: ${assistantResponse}\n`;
 
-                // Optional: Log runtime stats
                 console.log(await engine.runtimeStatsText());
 
-                // Clean up the engine when done (optional, frees up resources)
-                // await engine.unload();
-
             } catch (error) {
-                initLabel.innerText = `Error: ${error.message}`;
+                // Make sure the error message is displayed
+                initLabel.innerText = `WebLLM Error: ${error.message}`;
+                chatOutput.innerText += `\nError: ${error.message}\n`; // Also show in main output
                 console.error("WebLLM Error:", error);
             }
         }
