@@ -2,68 +2,123 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>WebLLM CDN Example</title>
+    <title>Gemini Nano Browser Demo</title>
+    <script src="https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0"></script>
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        #chat-container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            min-height: 400px;
+            margin-bottom: 20px;
+            overflow-y: auto;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            margin-left: 20%;
+        }
+        .bot-message {
+            background-color: #f5f5f5;
+            margin-right: 20%;
+        }
+        #input-container {
+            display: flex;
+            gap: 10px;
+        }
+        #prompt-input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-    <h1>WebLLM Chat Example</h1>
-    <label id="init-label">Initializing...</label>
-    <div id="chat-output" style="white-space: pre-wrap;"></div>
+    <div class="container">
+        <h1>Gemini Nano Chat</h1>
+        <div id="chat-container"></div>
+        <div id="input-container">
+            <input type="text" id="prompt-input" placeholder="Type your message...">
+            <button onclick="generateResponse()">Send</button>
+        </div>
+    </div>
 
-    <script type="module">
-        // Import necessary functions from the official package via esm.run CDN
-        import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm";
+    <script>
+        let generator;
+        let isLoading = false;
 
-        // *** CORRECTED MODEL ID HERE ***
-        const SELECTED_MODEL = "Phi-3-mini-4k-instruct-q4f16_1-MLC"; // Added -MLC suffix
-
-        const chatOutput = document.getElementById('chat-output');
-        const initLabel = document.getElementById('init-label');
-
-        // Optional: Callback to display model loading progress
-        const initProgressCallback = (report) => {
-            initLabel.innerText = report.text;
-            console.log(report.text);
-        };
-
-        async function main() {
+        // Initialize pipeline
+        async function initializeModel() {
             try {
-                // Create the MLCEngine, passing the corrected model ID
-                const engine = await CreateMLCEngine(
-                    SELECTED_MODEL,
-                    { initProgressCallback: initProgressCallback } // Configuration object
-                );
-
-                initLabel.innerText = "Model loaded. Ready to chat.";
-                chatOutput.innerText += "Engine loaded.\n";
-
-                // Example chat completion request
-                const messages = [
-                    { role: "system", content: "You are a helpful assistant." },
-                    { role: "user", content: "What is the capital of France?" }
-                ];
-
-                chatOutput.innerText += `User: ${messages[1].content}\n`;
-
-                // Use the engine's chat completions API
-                const reply = await engine.chat.completions.create({
-                    messages: messages,
-                });
-
-                const assistantResponse = reply.choices[0].message.content;
-                chatOutput.innerText += `Assistant: ${assistantResponse}\n`;
-
-                console.log(await engine.runtimeStatsText());
-
+                generator = await pipeline('text-generation', 'Xenova/gemini-nano');
+                addMessage("System: Model loaded and ready!", 'bot-message');
             } catch (error) {
-                // Make sure the error message is displayed
-                initLabel.innerText = `WebLLM Error: ${error.message}`;
-                chatOutput.innerText += `\nError: ${error.message}\n`; // Also show in main output
-                console.error("WebLLM Error:", error);
+                console.error('Error initializing model:', error);
+                addMessage("Error loading model. Please check console.", 'bot-message');
             }
         }
 
-        // Run the main function
-        main();
+        // Add messages to chat container
+        function addMessage(text, className) {
+            const chatDiv = document.getElementById('chat-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.textContent = text;
+            chatDiv.appendChild(messageDiv);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        // Generate response handler
+        async function generateResponse() {
+            if (isLoading || !generator) return;
+            
+            const input = document.getElementById('prompt-input');
+            const userMessage = input.value.trim();
+            if (!userMessage) return;
+
+            input.value = '';
+            isLoading = true;
+            addMessage(userMessage, 'user-message');
+
+            try {
+                const messages = [
+                    { role: 'user', content: userMessage }
+                ];
+
+                // Generate response with parameters
+                const output = await generator(messages, { 
+                    temperature: 0.7,
+                    max_new_tokens: 500
+                });
+
+                addMessage(output[0].generated_text, 'bot-message');
+            } catch (error) {
+                console.error('Generation error:', error);
+                addMessage("Error generating response. Please try again.", 'bot-message');
+            } finally {
+                isLoading = false;
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', initializeModel);
     </script>
 </body>
 </html>
