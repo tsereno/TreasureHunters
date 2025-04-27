@@ -72,30 +72,38 @@
 
         let chatHistory = [];
 
+        // Function to populate models
+        async function populateModels() {
+            try {
+                // List models using the class directly
+                const models = await GoogleGenerativeAI.listModels();
+                modelSelect.innerHTML = '<option value="">--Select a model--</option>'; // Clear previous options
+                models.forEach(m => {
+                    if (m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
+                        const option = document.createElement('option');
+                        option.value = m.name;
+                        option.textContent = m.displayName || m.name;
+                        modelSelect.appendChild(option);
+                    }
+                });
+            } catch (error) {
+                console.error("Error listing models:", error);
+                addMessageToChat("Failed to list models. Please check your network connection.", false);
+            }
+        }
+
+        // Populate models when the script loads
+        populateModels();
+
+
         connectButton.addEventListener('click', async () => {
             const apiKey = apiKeyInput.value.trim();
             if (apiKey) {
                 genAI = new GoogleGenerativeAI(apiKey); // Initialize with API key
-                try {
-                    // List models using the class, not the instance
-                    const models = await new GoogleGenerativeAI(apiKey).listModels();
-                    modelSelect.innerHTML = '<option value="">--Select a model--</option>'; // Clear previous options
-                    models.forEach(m => {
-                        if (m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
-                            const option = document.createElement('option');
-                            option.value = m.name;
-                            option.textContent = m.displayName || m.name;
-                            modelSelect.appendChild(option);
-                        }
-                    });
-                    modelSelect.disabled = false;
-                    userInput.disabled = false;
-                    sendButton.disabled = false;
-                    addMessageToChat("Successfully connected to Gemini API. Please select a model.", false);
-                } catch (error) {
-                    console.error("Error connecting to Gemini API or listing models:", error);
-                    addMessageToChat("Failed to connect to Gemini API or list models. Please check your API key and network connection.", false);
-                }
+                modelSelect.disabled = false;
+                userInput.disabled = false;
+                sendButton.disabled = false;
+                addMessageToChat("Successfully connected to Gemini API. Please select a model.", false);
             } else {
                 addMessageToChat("Please enter your API key.", false);
             }
@@ -103,7 +111,7 @@
 
         modelSelect.addEventListener('change', () => {
             const selectedModelName = modelSelect.value;
-            if (selectedModelName) {
+            if (selectedModelName && genAI) { // Ensure genAI is initialized
                 model = genAI.getGenerativeModel({ model: selectedModelName });
                 addMessageToChat(`Model "${modelSelect.options[modelSelect.selectedIndex].text}" selected.`, false);
                  // Initial message after model selection
@@ -111,7 +119,10 @@
                     addMessageToChat(response, false);
                     chatHistory.push({ role: "ai", parts: response });
                 });
-            } else {
+            } else if (!genAI) {
+                 addMessageToChat("Please connect to the Gemini API first.", false);
+            }
+             else {
                 model = null;
                 addMessageToChat("Please select a valid model.", false);
             }
@@ -163,11 +174,11 @@
             }
         });
 
-        // Initial message
-        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
-            addMessageToChat(response, false);
-            chatHistory.push({ role: "ai", parts: response });
-        });
+        // Initial message - removed as it depends on model selection now
+        // generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
+        //     addMessageToChat(response, false);
+        //     chatHistory.push({ role: "ai", parts: response });
+        // });
     </script>
 </body>
 </html>
