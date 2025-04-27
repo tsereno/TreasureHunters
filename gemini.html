@@ -1,81 +1,172 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Gemini API Key and Model Selection</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Adventure Chatbot</title>
     <style>
-        body { font-family: sans-serif; }
-        label { display: block; margin-top: 10px; }
-        input[type="password"], select { margin-top: 5px; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        #user-input {
+            width: calc(100% - 70px);
+            padding: 5px;
+        }
+        #send-button {
+            width: 60px;
+            padding: 5px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        .user-message {
+            text-align: right;
+            color: blue;
+        }
+        .ai-message {
+            text-align: left;
+            color: green;
+        }
     </style>
 </head>
 <body>
-    <h1>Gemini API Configuration</h1>
-
+    <h1>AI Adventure Chatbot</h1>
     <div>
-        <label for="apiKey">Gemini API Key:</label>
-        <input type="password" id="apiKey" name="apiKey">
+        <label for="api-key">Gemini API Key:</label>
+        <input type="password" id="api-key" placeholder="Enter your API key">
+        <button id="connect-button">Connect</button>
     </div>
-
-    <div>
-        <label for="modelSelect">Select Gemini Model:</label>
-        <select id="modelSelect" name="modelSelect">
-            <!-- Options will be populated by JavaScript -->
+    <div style="margin-top: 10px;">
+        <label for="model-select">Select Model:</label>
+        <select id="model-select" disabled>
+            <option value="">--Select a model--</option>
         </select>
     </div>
+    
+    <div id="chat-container" style="margin-top: 10px;"></div>
+    <input type="text" id="user-input" placeholder="Type your message..." disabled>
+    <button id="send-button" disabled>Send</button>
 
-    <script>
-        // Function to fetch available models from the Gemini API
-        async function fetchGeminiModels() {
-            const apiKey = document.getElementById('apiKey').value;
-            if (!apiKey) {
-                console.error("API Key is required to fetch models.");
-                return [];
-            }
+    <script type="module">
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai"
+        
+        let genAI;
+        let model;
 
-            const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+        const apiKeyInput = document.getElementById('api-key');
+        const connectButton = document.getElementById('connect-button');
+        const modelSelect = document.getElementById('model-select');
+        const chatContainer = document.getElementById('chat-container');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
 
-            try {
-                const response = await fetch(url);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+        let chatHistory = [];
+
+        connectButton.addEventListener('click', async () => {
+            const apiKey = apiKeyInput.value.trim();
+            if (apiKey) {
+                genAI = new GoogleGenerativeAI(apiKey);
+                try {
+                    const models = await genAI.listModels();
+                    modelSelect.innerHTML = '<option value="">--Select a model--</option>'; // Clear previous options
+                    models.forEach(m => {
+                        if (m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
+                            const option = document.createElement('option');
+                            option.value = m.name;
+                            option.textContent = m.displayName || m.name;
+                            modelSelect.appendChild(option);
+                        }
+                    });
+                    modelSelect.disabled = false;
+                    userInput.disabled = false;
+                    sendButton.disabled = false;
+                    addMessageToChat("Successfully connected to Gemini API. Please select a model.", false);
+                } catch (error) {
+                    console.error("Error connecting to Gemini API or listing models:", error);
+                    addMessageToChat("Failed to connect to Gemini API. Please check your API key.", false);
                 }
-                const data = await response.json();
-                return data.models || [];
+            } else {
+                addMessageToChat("Please enter your API key.", false);
+            }
+        });
+
+        modelSelect.addEventListener('change', () => {
+            const selectedModelName = modelSelect.value;
+            if (selectedModelName) {
+                model = genAI.getGenerativeModel({ model: selectedModelName });
+                addMessageToChat(`Model "${modelSelect.options[modelSelect.selectedIndex].text}" selected.`, false);
+                 // Initial message after model selection
+                generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
+                    addMessageToChat(response, false);
+                    chatHistory.push({ role: "ai", parts: response });
+                });
+            } else {
+                model = null;
+                addMessageToChat("Please select a valid model.", false);
+            }
+        });
+
+
+        async function generateContent(prompt) {
+            if (!model) {
+                addMessageToChat("Please select a model first.", false);
+                return "";
+            }
+            try {
+                const result = await model.generateContent(prompt);
+                return result.response.text();
             } catch (error) {
-                console.error("Error fetching Gemini models:", error);
-                return [];
+                console.error("Error generating content:", error);
+                return "Sorry, I encountered an error. Please try again.";
             }
         }
 
-        // Function to populate the model dropdown
-        async function populateModelDropdown() {
-            const modelSelect = document.getElementById('modelSelect');
-            modelSelect.innerHTML = ''; // Clear existing options
-
-            const availableModels = await fetchGeminiModels();
-
-            if (availableModels.length === 0) {
-                const option = document.createElement('option');
-                option.value = "";
-                option.textContent = "Could not fetch models. Enter API Key.";
-                modelSelect.appendChild(option);
-                return;
-            }
-
-            availableModels.forEach(model => {
-                const option = document.createElement('option');
-                option.value = model.name;
-                option.textContent = model.displayName || model.name;
-                modelSelect.appendChild(option);
-            });
+        function addMessageToChat(message, isUser) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+            messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
+            messageElement.textContent = message;
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // Call the function to populate the dropdown when the page loads or API key is entered
-        window.onload = populateModelDropdown;
-        document.getElementById('apiKey').addEventListener('change', populateModelDropdown);
+        async function handleUserInput() {
+            const userMessage = userInput.value.trim();
+            if (userMessage) {
+                addMessageToChat(userMessage, true);
+                userInput.value = '';
 
-        // You would add logic here to handle the API key input and model selection
-        // For example, storing the API key securely and using the selected model
+                chatHistory.push({ role: "user", parts: userMessage });
+                const fullPrompt = chatHistory.map(msg => `${msg.role}: ${msg.parts}`).join('\n') + "\nai:";
+
+                const aiResponse = await generateContent(fullPrompt);
+                addMessageToChat(aiResponse, false);
+                chatHistory.push({ role: "ai", parts: aiResponse });
+            }
+        }
+
+        sendButton.addEventListener('click', handleUserInput);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleUserInput();
+            }
+        });
+
+        // Initial message
+        generateContent("You are a choose your own adventure story. Introduce the story and give the user their first choice.").then(response => {
+            addMessageToChat(response, false);
+            chatHistory.push({ role: "ai", parts: response });
+        });
     </script>
 </body>
 </html>
