@@ -48,8 +48,12 @@
     </div>
     <div style="margin-top: 10px;">
         <label for="model-select">Select Model:</label>
-        <select id="model-select" disabled>
+        <select id="model-select">
             <option value="">--Select a model--</option>
+            <option value="gemini-1.5-flash-latest">gemini-1.5-flash-latest</option>
+            <option value="gemini-1.5-pro-latest">gemini-1.5-pro-latest</option>
+            <option value="gemini-1.0-pro">gemini-1.0-pro</option>
+            <!-- Add other relevant Gemini models here if needed -->
         </select>
     </div>
     
@@ -72,38 +76,14 @@
 
         let chatHistory = [];
 
-        // Function to populate models
-        async function populateModels() {
-            try {
-                // List models using the class directly
-                const models = await GoogleGenerativeAI.listModels();
-                modelSelect.innerHTML = '<option value="">--Select a model--</option>'; // Clear previous options
-                models.forEach(m => {
-                    if (m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
-                        const option = document.createElement('option');
-                        option.value = m.name;
-                        option.textContent = m.displayName || m.name;
-                        modelSelect.appendChild(option);
-                    }
-                });
-            } catch (error) {
-                console.error("Error listing models:", error);
-                addMessageToChat("Failed to list models. Please check your network connection.", false);
-            }
-        }
-
-        // Populate models when the script loads
-        populateModels();
-
-
         connectButton.addEventListener('click', async () => {
             const apiKey = apiKeyInput.value.trim();
             if (apiKey) {
                 genAI = new GoogleGenerativeAI(apiKey); // Initialize with API key
-                modelSelect.disabled = false;
+                // Model selection is now handled by the dropdown change event
                 userInput.disabled = false;
                 sendButton.disabled = false;
-                addMessageToChat("Successfully connected to Gemini API. Please select a model.", false);
+                addMessageToChat("Successfully connected to Gemini API. Please select a model from the dropdown and start chatting.", false);
             } else {
                 addMessageToChat("Please enter your API key.", false);
             }
@@ -111,7 +91,7 @@
 
         modelSelect.addEventListener('change', () => {
             const selectedModelName = modelSelect.value;
-            if (selectedModelName && genAI) { // Ensure genAI is initialized
+            if (selectedModelName && genAI) { // Ensure genAI is initialized and a model is selected
                 model = genAI.getGenerativeModel({ model: selectedModelName });
                 addMessageToChat(`Model "${modelSelect.options[modelSelect.selectedIndex].text}" selected.`, false);
                  // Initial message after model selection
@@ -124,7 +104,7 @@
             }
              else {
                 model = null;
-                addMessageToChat("Please select a valid model.", false);
+                // addMessageToChat("Please select a valid model.", false); // Avoid message when selecting "--Select a model--"
             }
         });
 
