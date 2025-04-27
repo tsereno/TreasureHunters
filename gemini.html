@@ -75,9 +75,10 @@
         connectButton.addEventListener('click', async () => {
             const apiKey = apiKeyInput.value.trim();
             if (apiKey) {
-                genAI = new GoogleGenerativeAI(apiKey);
+                genAI = new GoogleGenerativeAI(apiKey); // Initialize with API key
                 try {
-                    const models = await genAI.listModels();
+                    // List models using the class, not the instance
+                    const models = await new GoogleGenerativeAI(apiKey).listModels();
                     modelSelect.innerHTML = '<option value="">--Select a model--</option>'; // Clear previous options
                     models.forEach(m => {
                         if (m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
@@ -93,7 +94,7 @@
                     addMessageToChat("Successfully connected to Gemini API. Please select a model.", false);
                 } catch (error) {
                     console.error("Error connecting to Gemini API or listing models:", error);
-                    addMessageToChat("Failed to connect to Gemini API. Please check your API key.", false);
+                    addMessageToChat("Failed to connect to Gemini API or list models. Please check your API key and network connection.", false);
                 }
             } else {
                 addMessageToChat("Please enter your API key.", false);
